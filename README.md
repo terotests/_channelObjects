@@ -8,6 +8,7 @@ The main file and journal are ment to be used together with (Channels)[https://g
 
 1. All commands should be reversable => not the case right now
 2. Create enough test coverage for special cases and errors
+3. moving objects from one subtree to other + reversing that is missing
 
 
 # Object 
