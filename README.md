@@ -32,7 +32,7 @@ Example of an object representing SVG entity might be something like this:
 This corresponds plain JS object:
 
 ```javascript
-{ x : 100, y : 100, fill : "red", type : "rect"
+{ x : 100, y : 100, fill : "red", type : "rect" }
 ```
 
 Each nested object structure will always have the wrapper structure included, for example JavaScript object
