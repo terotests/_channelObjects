@@ -682,7 +682,7 @@
 
           if (obj) {
 
-            _execInfo.oldValue = obj.data[prop];
+            if (obj.data[prop] == a[2]) return;
 
             obj.data[prop] = a[2]; // value is now set...
             this._cmd(a, obj, null);
