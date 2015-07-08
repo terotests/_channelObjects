@@ -45,7 +45,8 @@ Would be represented as:
             data : {
               x : 150
             },
-            __id : "l2f2e887u6u3207oekk3mxcz93"
+            __id : "l2f2e887u6u3207oekk3mxcz93",
+            __p  : "m6cq0z12pckp4zb5psbvfvlp4l" // <-- parent id
       }
   },
   __id : "m6cq0z12pckp4zb5psbvfvlp4l"
