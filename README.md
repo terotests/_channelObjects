@@ -338,20 +338,20 @@ dataTest.toPlainData();     // returns data as regular JavaScript object with no
     
     
     
-##### trait commad_trait2
+##### trait commad_trait
 
-- [_cmd_aceCmd](README.md#commad_trait2__cmd_aceCmd)
-- [_cmd_createArray](README.md#commad_trait2__cmd_createArray)
-- [_cmd_createObject](README.md#commad_trait2__cmd_createObject)
-- [_cmd_moveToIndex](README.md#commad_trait2__cmd_moveToIndex)
-- [_cmd_pushToArray](README.md#commad_trait2__cmd_pushToArray)
-- [_cmd_removeObject](README.md#commad_trait2__cmd_removeObject)
-- [_cmd_setProperty](README.md#commad_trait2__cmd_setProperty)
-- [_cmd_setPropertyObject](README.md#commad_trait2__cmd_setPropertyObject)
-- [_cmd_unsetProperty](README.md#commad_trait2__cmd_unsetProperty)
-- [_fireListener](README.md#commad_trait2__fireListener)
-- [_moveCmdListToParent](README.md#commad_trait2__moveCmdListToParent)
-- [execCmd](README.md#commad_trait2_execCmd)
+- [_cmd_aceCmd](README.md#commad_trait__cmd_aceCmd)
+- [_cmd_createArray](README.md#commad_trait__cmd_createArray)
+- [_cmd_createObject](README.md#commad_trait__cmd_createObject)
+- [_cmd_moveToIndex](README.md#commad_trait__cmd_moveToIndex)
+- [_cmd_pushToArray](README.md#commad_trait__cmd_pushToArray)
+- [_cmd_removeObject](README.md#commad_trait__cmd_removeObject)
+- [_cmd_setProperty](README.md#commad_trait__cmd_setProperty)
+- [_cmd_setPropertyObject](README.md#commad_trait__cmd_setPropertyObject)
+- [_cmd_unsetProperty](README.md#commad_trait__cmd_unsetProperty)
+- [_fireListener](README.md#commad_trait__fireListener)
+- [_moveCmdListToParent](README.md#commad_trait__moveCmdListToParent)
+- [execCmd](README.md#commad_trait_execCmd)
 
 
     
@@ -1276,7 +1276,7 @@ return t === Object(t);
     
     
     
-## trait commad_trait2
+## trait commad_trait
 
 The class has following internal singleton variables:
         
@@ -1289,7 +1289,7 @@ The class has following internal singleton variables:
 * _cmds
         
         
-### <a name="commad_trait2__cmd_aceCmd"></a>commad_trait2::_cmd_aceCmd(a, isRemote)
+### <a name="commad_trait__cmd_aceCmd"></a>commad_trait::_cmd_aceCmd(a, isRemote)
 
 
 ```javascript
@@ -1313,7 +1313,7 @@ _doingRemote = false;
 this._fireListener(obj, prop);
 ```
 
-### <a name="commad_trait2__cmd_createArray"></a>commad_trait2::_cmd_createArray(a, isRemote)
+### <a name="commad_trait__cmd_createArray"></a>commad_trait::_cmd_createArray(a, isRemote)
 
 
 ```javascript
@@ -1325,7 +1325,7 @@ if(!(isRemote )) {
 } 
 ```
 
-### <a name="commad_trait2__cmd_createObject"></a>commad_trait2::_cmd_createObject(a, isRemote)
+### <a name="commad_trait__cmd_createObject"></a>commad_trait::_cmd_createObject(a, isRemote)
 
 
 ```javascript
@@ -1337,7 +1337,7 @@ if(!(isRemote)) {
 } 
 ```
 
-### <a name="commad_trait2__cmd_moveToIndex"></a>commad_trait2::_cmd_moveToIndex(a, isRemote)
+### <a name="commad_trait__cmd_moveToIndex"></a>commad_trait::_cmd_moveToIndex(a, isRemote)
 
 
 ```javascript
@@ -1380,7 +1380,7 @@ if(targetObj) {
 }
 ```
 
-### <a name="commad_trait2__cmd_pushToArray"></a>commad_trait2::_cmd_pushToArray(a, isRemote)
+### <a name="commad_trait__cmd_pushToArray"></a>commad_trait::_cmd_pushToArray(a, isRemote)
 
 
 ```javascript
@@ -1412,7 +1412,7 @@ if( parentObj && insertedObj) {
 }
 ```
 
-### <a name="commad_trait2__cmd_removeObject"></a>commad_trait2::_cmd_removeObject(a, isRemote)
+### <a name="commad_trait__cmd_removeObject"></a>commad_trait::_cmd_removeObject(a, isRemote)
 
 
 ```javascript
@@ -1442,7 +1442,7 @@ if( parentObj && removedItem) {
 }
 ```
 
-### <a name="commad_trait2__cmd_setProperty"></a>commad_trait2::_cmd_setProperty(a, isRemote)
+### <a name="commad_trait__cmd_setProperty"></a>commad_trait::_cmd_setProperty(a, isRemote)
 
 
 ```javascript
@@ -1465,7 +1465,7 @@ if(obj) {
 }
 ```
 
-### <a name="commad_trait2__cmd_setPropertyObject"></a>commad_trait2::_cmd_setPropertyObject(a, isRemote)
+### <a name="commad_trait__cmd_setPropertyObject"></a>commad_trait::_cmd_setPropertyObject(a, isRemote)
 
 
 ```javascript
@@ -1486,7 +1486,7 @@ if(!isRemote) {
 } 
 ```
 
-### <a name="commad_trait2__cmd_unsetProperty"></a>commad_trait2::_cmd_unsetProperty(a, isRemote)
+### <a name="commad_trait__cmd_unsetProperty"></a>commad_trait::_cmd_unsetProperty(a, isRemote)
 
 
 ```javascript
@@ -1502,7 +1502,7 @@ if(obj && prop) {
        
 ```
 
-### <a name="commad_trait2__fireListener"></a>commad_trait2::_fireListener(obj, prop)
+### <a name="commad_trait__fireListener"></a>commad_trait::_fireListener(obj, prop)
 
 
 ```javascript
@@ -1517,14 +1517,14 @@ if(_listeners) {
 }
 ```
 
-### <a name="commad_trait2__moveCmdListToParent"></a>commad_trait2::_moveCmdListToParent(t)
+### <a name="commad_trait__moveCmdListToParent"></a>commad_trait::_moveCmdListToParent(t)
 
 
 ```javascript
 
 ```
 
-### <a name="commad_trait2_execCmd"></a>commad_trait2::execCmd(a, isRemote)
+### <a name="commad_trait_execCmd"></a>commad_trait::execCmd(a, isRemote)
 
 
 ```javascript
@@ -1535,7 +1535,7 @@ if(c) {
 }
 ```
 
-### commad_trait2::constructor( t )
+### commad_trait::constructor( t )
 
 ```javascript
 if(!_listeners) {
