@@ -827,6 +827,7 @@
             _cmds[13] = this._cmd_aceCmd;
 
             _reverseCmds[4] = this._reverse_setProperty;
+            _reverseCmds[7] = this._reverse_pushToArray;
           }
         });
 
