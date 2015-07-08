@@ -880,9 +880,10 @@
           // the object is not good enough.
 
           delete obj.data[prop]; // removes the property object
+          setObj.__p = null;
 
-          setObj.__p = obj.__id; // The parent relationship
-          this._cmd(a, obj, setObj);
+          var tmpCmd = [10, prop, null, null, a[4]];
+          this._cmd(tmpCmd);
         };
 
         /**
