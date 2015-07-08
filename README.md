@@ -255,7 +255,7 @@ dataTest.toPlainData();     // returns data as regular JavaScript object with no
 
 A demo of workers
 
-http://jsfiddle.net/mj8c3p5k/1/
+http://jsfiddle.net/mj8c3p5k/2/
 
 The workers are created to save memory and organize all the functions which are modifying the Object data in a single place.
 
