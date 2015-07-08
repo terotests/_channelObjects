@@ -260,6 +260,8 @@ dataTest.toPlainData();     // returns data as regular JavaScript object with no
 
 # Reversing Actions 
 
+Testing reverse with workers demo : http://jsfiddle.net/63wfkry4/
+
 Actions in the journal must be reversable. This means that each command should have enought information to reverse the operation it has created.
 
 Reversing commands can be done using either `reverseToLine` or `reverseNLines`  
@@ -1685,8 +1687,8 @@ var obj = this._find( a[4] ),
 
 if(obj) {
     
-    _execInfo.oldValue = obj.data[prop];
-    
+    if( obj.data[prop] == a[2] ) return;
+
     obj.data[prop] = a[2]; // value is now set...
     this._cmd(a, obj, null);
     
