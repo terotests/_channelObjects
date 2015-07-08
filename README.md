@@ -429,6 +429,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_moveCmdListToParent](README.md#commad_trait__moveCmdListToParent)
 - [_reverse_moveToIndex](README.md#commad_trait__reverse_moveToIndex)
 - [_reverse_pushToArray](README.md#commad_trait__reverse_pushToArray)
+- [_reverse_removeObject](README.md#commad_trait__reverse_removeObject)
 - [_reverse_setProperty](README.md#commad_trait__reverse_setProperty)
 - [execCmd](README.md#commad_trait_execCmd)
 - [getLocalJournal](README.md#commad_trait_getLocalJournal)
@@ -1586,8 +1587,14 @@ if(targetObj) {
 
 
 ```javascript
+
+// old position
+// [ "parentId", "index"]
+
 var parentObj = this._find( a[4] ),
     insertedObj = this._find( a[2] ),
+    toIndex = a[1],
+    oldPos  = a[3],  // old position can also be "null"
     prop = "*",
     index = parentObj.data.length; // might check if valid...
 
@@ -1598,12 +1605,12 @@ if( parentObj && insertedObj) {
     if(!insertedObj.__p || ( insertedObj.__p != parentObj.__id) ) {
     
         // now the object is in the array...
-        parentObj.data.push( insertedObj );
+        
+        parentObj.data.splice( toIndex, 0, insertedObj );
+        
         insertedObj.__p = parentObj.__id;
         this._cmd(a, parentObj, insertedObj);
-        
-        // ?? is this required in this particular case??
-        
+
         this._moveCmdListToParent(insertedObj);
         
         // Saving the write to root document
@@ -1799,6 +1806,30 @@ if( parentObj && insertedObj) {
 }
 ```
 
+### <a name="commad_trait__reverse_removeObject"></a>commad_trait::_reverse_removeObject(a)
+
+
+```javascript
+
+var parentObj = this._find( a[4] ),
+    removedItem = this._find( a[2] ),
+    oldPosition = a[1],
+    prop = "*",
+    index = parentObj.data.indexOf( removedItem ); // might check if valid...
+
+// Moving the object in the array
+if( parentObj && removedItem) {
+
+    // now the object is in the array...
+    parentObj.data.splice( oldPosition, 0, removedItem );
+    
+    var tmpCmd = [7, oldPosition, a[2], null, a[4]];
+    this._cmd(tmpCmd);
+    
+    removedItem.__p = a[4];
+}
+```
+
 ### <a name="commad_trait__reverse_setProperty"></a>commad_trait::_reverse_setProperty(a)
 
 
@@ -1859,6 +1890,7 @@ if(!_cmds) {
     
     _reverseCmds[4] = this._reverse_setProperty;
     _reverseCmds[7] = this._reverse_pushToArray;
+    _reverseCmds[8] = this._reverse_removeObject;
     _reverseCmds[12] = this._reverse_moveToIndex;
     
 }
