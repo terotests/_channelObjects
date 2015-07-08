@@ -776,6 +776,7 @@
 
       (function (_myTrait_) {
         var _instanceCache;
+        var _workerCmds;
 
         // Initialize static variables here...
 
@@ -805,7 +806,42 @@
          * @param float obj
          * @param float targetObj
          */
-        _myTrait_._cmd = function (cmd, obj, targetObj) {};
+        _myTrait_._cmd = function (cmd, obj, targetObj) {
+
+          var cmdIndex = cmd[0],
+              UUID = cmd[4];
+
+          if (!this._workers[cmdIndex]) return;
+          if (!this._workers[cmdIndex][UUID]) return;
+
+          var workers = this._workers[cmdIndex][UUID];
+          var me = this;
+
+          var propFilter = cmd[1];
+          var allProps = workers["*"],
+              thisProp = workers[propFilter];
+
+          if (allProps) {
+            allProps.forEach(function (w) {
+              var id = w[0],
+                  options = w[1];
+              var worker = _workerCmds[id];
+              if (worker) {
+                worker(cmd, options);
+              }
+            });
+          }
+          if (thisProp) {
+            thisProp.forEach(function (w) {
+              var id = w[0],
+                  options = w[1];
+              var worker = _workerCmds[id];
+              if (worker) {
+                worker(cmd, options);
+              }
+            });
+          }
+        };
 
         /**
          * @param float obj
@@ -1055,6 +1091,57 @@
         };
 
         /**
+         * @param Array cmdFilter
+         * @param float workerID
+         * @param float workerOptions
+         */
+        _myTrait_.createWorker = function (cmdFilter, workerID, workerOptions) {
+
+          // cmdFilter could be something like this:
+          // [ 4, 'x', null, null, 'GUID' ]
+          // [ 8, null, null, null, 'GUID' ]
+
+          var cmdIndex = cmdFilter[0],
+              UUID = cmdFilter[4];
+
+          if (!this._workers[cmdIndex]) {
+            this._workers[cmdIndex] = {};
+          }
+
+          if (!this._workers[cmdIndex][UUID]) this._workers[cmdIndex][UUID] = {};
+
+          var workers = this._workers[cmdIndex][UUID];
+
+          var propFilter = cmdFilter[1];
+          if (!propFilter) propFilter = "*";
+
+          if (!workers[propFilter]) workers[propFilter] = [];
+
+          workers[propFilter].push([workerID, workerOptions]);
+
+          // The original worker implementation was something like this:
+
+          // The worker has
+          // 1. the Data item ID
+          // 2. property name
+          // 3. the worker function
+          // 4. the view information
+          // 5. extra params ( 4. and 5. could be simplified to options)
+
+          /*
+          var w = _dataLink._createWorker( 
+          dataItem.__id, 
+          vName, 
+          _workers().fetch(9), 
+          subTplDOM, {
+           modelid : dataItem.__id,
+           compiler : me,
+           view : myView
+          });
+          */
+        };
+
+        /**
          * @param float t
          */
         _myTrait_.getData = function (t) {
@@ -1106,6 +1193,7 @@
 
           var me = this;
           this._data = mainData;
+          this._workers = {};
 
           var newData = this._findObjects(mainData);
           if (newData != mainData) this._data = newData;
@@ -1118,6 +1206,21 @@
             });
           }
         });
+
+        /**
+         * @param Object cmdObject
+         */
+        _myTrait_.setWorkerCommands = function (cmdObject) {
+
+          if (!_workerCmds) _workerCmds = {};
+
+          for (var i in cmdObject) {
+            if (cmdObject.hasOwnProperty(i)) {
+              _workerCmds[i] = cmdObject[i];
+            }
+          }
+          // _workerCmds
+        };
 
         /**
          * @param float obj

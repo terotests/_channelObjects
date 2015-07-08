@@ -251,6 +251,59 @@ dataTest.getData();         // returns data with __id values
 dataTest.toPlainData();     // returns data as regular JavaScript object with no __id values
 ```
 
+# Workers
+
+The workers are created to save memory and organize all the functions which are modifying the Object data in a single place.
+
+1. Workers save memory because they create no closures allocated for event handlers
+2. When object gets de-allocated, the event handlers can be cleared from a single place
+3. Only basic JavaScript datatypes are used to manage the interactions, thus no need for event handling code in the objects
+
+Workers can execute tasks when the value of Objects change. They are similar to callback functions, but different in the sence that the workers are run by the command names, not by callback functions.
+
+This means that instead of allocating a function closure like this:
+
+```javascript
+obj.on("change", function() {
+     // do something
+ });
+```
+
+You will create a set of operations based on which data-command like remove, set property or re-oders is actually performed and then create a context variable which is given to the context runner.
+
+For example, you might create a command `1` which will set the value of the property set command to the `options.target.value`.
+
+```javascript
+// we specify worker ID = 1 here
+dataTest.setWorkerCommands({
+    "set_input" : function(cmd, options) {        
+        options.target.value = cmd[2];
+    }
+});
+```
+
+Each worker is a function, which gets the current command `cmd` and the options specified when creating the worker.
+
+What is the  `options.target.value` ? When you create a worker, you specify the command filter, command ID and options.
+
+```javascript
+dataTest.createWorker(<filter>, <workerID>, <options>);
+```
+
+The params are:
+
+1. Filter, which is of format [<command>, <property optional>, null, null, <GUID>]
+2. Worker ID which is one of the properties of `setWorkerCommands` 
+3. Options, which gives the context for the worker to run with.
+
+```javascript
+var myInput = document.getElementById("someInput");
+dataTest.createWorker([4, "name", null, null, "<GUID>"], "set_input", { target : myInput});
+```
+
+
+
+
 
 
 
@@ -324,8 +377,10 @@ dataTest.toPlainData();     // returns data as regular JavaScript object with no
 - [_getObjectHash](README.md#_channelData__getObjectHash)
 - [_prepareData](README.md#_channelData__prepareData)
 - [_wrapData](README.md#_channelData__wrapData)
+- [createWorker](README.md#_channelData_createWorker)
 - [getData](README.md#_channelData_getData)
 - [indexOf](README.md#_channelData_indexOf)
+- [setWorkerCommands](README.md#_channelData_setWorkerCommands)
 - [toPlainData](README.md#_channelData_toPlainData)
 - [writeCommand](README.md#_channelData_writeCommand)
 
@@ -756,6 +811,8 @@ The class has following internal singleton variables:
         
 * _instanceCache
         
+* _workerCmds
+        
         
 ### <a name="_channelData__addToCache"></a>_channelData::_addToCache(data)
 
@@ -783,6 +840,40 @@ _instanceCache[id] = this;
 
 In the future can be used to initiate events, if required.
 ```javascript
+
+var cmdIndex = cmd[0],
+    UUID = cmd[4];
+    
+if(!this._workers[cmdIndex]) return;
+if(!this._workers[cmdIndex][UUID]) return;
+    
+var workers = this._workers[cmdIndex][UUID];
+var me = this;
+
+var propFilter = cmd[1];
+var allProps = workers["*"],
+    thisProp = workers[propFilter];
+
+if(allProps) {
+    allProps.forEach( function(w) {
+        var id = w[0],
+            options = w[1];
+        var worker = _workerCmds[id];
+        if(worker) {
+            worker( cmd, options );
+        }
+    });
+}
+if(thisProp) {
+    thisProp.forEach( function(w) {
+        var id = w[0],
+            options = w[1];
+        var worker = _workerCmds[id];
+        if(worker) {
+            worker( cmd, options );
+        }
+    });
+}
 
 ```
 
@@ -1039,6 +1130,59 @@ var newObj = {
 return newObj;
 ```
 
+### <a name="_channelData_createWorker"></a>_channelData::createWorker(cmdFilter, workerID, workerOptions)
+
+
+```javascript
+
+// cmdFilter could be something like this:
+// [ 4, 'x', null, null, 'GUID' ]
+// [ 8, null, null, null, 'GUID' ]
+
+var cmdIndex = cmdFilter[0],
+    UUID = cmdFilter[4];
+
+if(!this._workers[cmdIndex]) {
+    this._workers[cmdIndex] = {};
+}
+
+if(!this._workers[cmdIndex][UUID]) 
+    this._workers[cmdIndex][UUID] = {};
+
+var workers = this._workers[cmdIndex][UUID];
+
+var propFilter = cmdFilter[1];
+if(!propFilter) propFilter = "*";
+
+if(!workers[propFilter]) workers[propFilter] = [];
+
+workers[propFilter].push( [workerID, workerOptions ] );
+
+
+
+
+// The original worker implementation was something like this:
+
+// The worker has 
+// 1. the Data item ID
+// 2. property name
+// 3. the worker function
+// 4. the view information
+// 5. extra params ( 4. and 5. could be simplified to options)
+
+/*
+   var w = _dataLink._createWorker( 
+        dataItem.__id, 
+        vName, 
+        _workers().fetch(9), 
+        subTplDOM, {
+           modelid : dataItem.__id,
+           compiler : me,
+           view : myView
+       });
+*/
+```
+
 ### <a name="_channelData_getData"></a>_channelData::getData(t)
 
 
@@ -1092,6 +1236,7 @@ if(!this._objectHash) {
 
 var me = this;
 this._data = mainData;
+this._workers = {};
 
 var newData = this._findObjects(mainData);
 if(newData != mainData ) this._data = newData;
@@ -1107,6 +1252,25 @@ if(journalCmds && this.isArray(journalCmds)) {
 
 ```
         
+### <a name="_channelData_setWorkerCommands"></a>_channelData::setWorkerCommands(cmdObject)
+
+
+```javascript
+
+if(!_workerCmds) _workerCmds = {};
+
+
+for(var i in cmdObject) {
+    if(cmdObject.hasOwnProperty(i)) {
+        _workerCmds[i] = cmdObject[i];
+    }
+}
+// _workerCmds
+
+
+
+```
+
 ### <a name="_channelData_toPlainData"></a>_channelData::toPlainData(obj)
 
 
