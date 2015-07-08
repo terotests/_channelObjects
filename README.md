@@ -427,6 +427,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_cmd_unsetProperty](README.md#commad_trait__cmd_unsetProperty)
 - [_fireListener](README.md#commad_trait__fireListener)
 - [_moveCmdListToParent](README.md#commad_trait__moveCmdListToParent)
+- [_reverse_moveToIndex](README.md#commad_trait__reverse_moveToIndex)
 - [_reverse_pushToArray](README.md#commad_trait__reverse_pushToArray)
 - [_reverse_setProperty](README.md#commad_trait__reverse_setProperty)
 - [execCmd](README.md#commad_trait_execCmd)
@@ -1540,12 +1541,20 @@ var obj = this._find( a[4] ),
     targetObj,
     i = 0;
 
+var oldIndex = null;
+
 for(i=0; i< len; i++) {
     var m = obj.data[i];
     if(m.__id == a[1]) {
         targetObj = m;
+        oldIndex = i;
         break;
     }
+}
+
+if(oldIndex != a[3]) {
+    throw "moveToIndex with invalid old index value";
+    return;
 }
 
 // Questions here:
@@ -1717,6 +1726,48 @@ if(_listeners) {
 
 ```
 
+### <a name="commad_trait__reverse_moveToIndex"></a>commad_trait::_reverse_moveToIndex(a)
+
+
+```javascript
+var obj = this._find( a[4] ),
+    prop = "*",
+    len = obj.data.length,
+    targetObj,
+    i = 0;
+
+var oldIndex = null;
+
+for(i=0; i< len; i++) {
+    var m = obj.data[i];
+    if(m.__id == a[1]) {
+        targetObj = m;
+        oldIndex = i;
+        break;
+    }
+}
+
+if(oldIndex != a[2]) {
+    throw "_reverse_moveToIndex with invalid index value";
+    return;
+}
+
+if(targetObj) {
+    
+    var targetIndex = parseInt(a[3]);
+    
+    obj.data.splice(i, 1);
+    obj.data.splice(targetIndex, 0, targetObj);
+    
+    var tmpCmd = a.slice();
+    tmpCmd[2] = targetIndex;
+    tmpCmd[3] = a[2];
+    
+    this._cmd(tmpCmd);
+
+}
+```
+
 ### <a name="commad_trait__reverse_pushToArray"></a>commad_trait::_reverse_pushToArray(a)
 
 
@@ -1808,6 +1859,7 @@ if(!_cmds) {
     
     _reverseCmds[4] = this._reverse_setProperty;
     _reverseCmds[7] = this._reverse_pushToArray;
+    _reverseCmds[12] = this._reverse_moveToIndex;
     
 }
 ```

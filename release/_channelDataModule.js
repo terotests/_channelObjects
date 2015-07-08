@@ -562,12 +562,20 @@
               targetObj,
               i = 0;
 
+          var oldIndex = null;
+
           for (i = 0; i < len; i++) {
             var m = obj.data[i];
             if (m.__id == a[1]) {
               targetObj = m;
+              oldIndex = i;
               break;
             }
+          }
+
+          if (oldIndex != a[3]) {
+            throw "moveToIndex with invalid old index value";
+            return;
           }
 
           // Questions here:
@@ -741,6 +749,47 @@
         /**
          * @param float a
          */
+        _myTrait_._reverse_moveToIndex = function (a) {
+          var obj = this._find(a[4]),
+              prop = "*",
+              len = obj.data.length,
+              targetObj,
+              i = 0;
+
+          var oldIndex = null;
+
+          for (i = 0; i < len; i++) {
+            var m = obj.data[i];
+            if (m.__id == a[1]) {
+              targetObj = m;
+              oldIndex = i;
+              break;
+            }
+          }
+
+          if (oldIndex != a[2]) {
+            throw "_reverse_moveToIndex with invalid index value";
+            return;
+          }
+
+          if (targetObj) {
+
+            var targetIndex = parseInt(a[3]);
+
+            obj.data.splice(i, 1);
+            obj.data.splice(targetIndex, 0, targetObj);
+
+            var tmpCmd = a.slice();
+            tmpCmd[2] = targetIndex;
+            tmpCmd[3] = a[2];
+
+            this._cmd(tmpCmd);
+          }
+        };
+
+        /**
+         * @param float a
+         */
         _myTrait_._reverse_pushToArray = function (a) {
           var parentObj = this._find(a[4]),
               insertedObj = this._find(a[2]),
@@ -828,6 +877,7 @@
 
             _reverseCmds[4] = this._reverse_setProperty;
             _reverseCmds[7] = this._reverse_pushToArray;
+            _reverseCmds[12] = this._reverse_moveToIndex;
           }
         });
 
