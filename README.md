@@ -298,7 +298,9 @@ The params are:
 
 ```javascript
 var myInput = document.getElementById("someInput");
-dataTest.createWorker("set_input", [4, "name", null, null, "<GUID>"],  { target : myInput});
+dataTest.createWorker("set_input",                        // worker ID
+                      [4, "name", null, null, "<GUID>"],  // filter
+                      { target : myInput});               // options
 ```
 
 
