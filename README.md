@@ -292,7 +292,7 @@ dataTest.createWorker(<workerID>, <filter>, <options>);
 
 The params are:
 
-1. Filter, which is of format [<command>, <property optional>, null, null, <GUID>]
+1. Filter, which is of format `[<command>, <property|null>, null, null, <GUID>]`
 2. Worker ID which is one of the properties of `setWorkerCommands` 
 3. Options, which gives the context for the worker to run with.
 
