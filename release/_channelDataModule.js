@@ -1208,6 +1208,7 @@
         });
 
         /**
+         * Notice that all channels are using the same commands.
          * @param Object cmdObject
          */
         _myTrait_.setWorkerCommands = function (cmdObject) {

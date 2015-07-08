@@ -1260,7 +1260,7 @@ if(journalCmds && this.isArray(journalCmds)) {
         
 ### <a name="_channelData_setWorkerCommands"></a>_channelData::setWorkerCommands(cmdObject)
 
-
+Notice that all channels are using the same commands.
 ```javascript
 
 if(!_workerCmds) _workerCmds = {};
