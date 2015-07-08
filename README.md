@@ -4,6 +4,12 @@ The first run-down of the command runner. When sending arbitary object data over
 
 The main file and journal are ment to be used together with (Channels)[https://github.com/terotests/_channels] which make possible forking the data into separate branches.
 
+# Known problems still
+
+1. All commands should be reversable => not the case right now
+2. Create enough test coverage for special cases and errors
+
+
 # Object 
 
 Channel data can change only objects or arrays, individual values are always accessed through the object properties.
@@ -421,6 +427,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_cmd_unsetProperty](README.md#commad_trait__cmd_unsetProperty)
 - [_fireListener](README.md#commad_trait__fireListener)
 - [_moveCmdListToParent](README.md#commad_trait__moveCmdListToParent)
+- [_reverse_pushToArray](README.md#commad_trait__reverse_pushToArray)
 - [_reverse_setProperty](README.md#commad_trait__reverse_setProperty)
 - [execCmd](README.md#commad_trait_execCmd)
 - [getLocalJournal](README.md#commad_trait_getLocalJournal)
@@ -1708,6 +1715,37 @@ if(_listeners) {
 
 ```javascript
 
+```
+
+### <a name="commad_trait__reverse_pushToArray"></a>commad_trait::_reverse_pushToArray(a)
+
+
+```javascript
+var parentObj = this._find( a[4] ),
+    insertedObj = this._find( a[2] ),
+    prop = "*",
+    index = parentObj.data.length; 
+    
+// Moving the object in the array
+if( parentObj && insertedObj) {
+    
+    var shouldBeAt = parentObj.data.length - 1;
+    
+    var item = parentObj.data[shouldBeAt];
+    
+    // old parent and old item id perhas should be also defined?
+    if(item.__id == a[2]) {
+        
+        // the command which appears to be run, sent to the data listeners
+        var tmpCmd = [ 8, shouldBeAt, item.__id,  null,  parentObj.__id  ];
+        
+        // too simple still...
+        parentObj.data.splice( shouldBeAt, 1 ); 
+        
+        this._cmd(tmpCmd);
+    }
+
+}
 ```
 
 ### <a name="commad_trait__reverse_setProperty"></a>commad_trait::_reverse_setProperty(a)

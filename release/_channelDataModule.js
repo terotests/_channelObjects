@@ -739,6 +739,36 @@
         _myTrait_._moveCmdListToParent = function (t) {};
 
         /**
+         * @param float a
+         */
+        _myTrait_._reverse_pushToArray = function (a) {
+          var parentObj = this._find(a[4]),
+              insertedObj = this._find(a[2]),
+              prop = "*",
+              index = parentObj.data.length;
+
+          // Moving the object in the array
+          if (parentObj && insertedObj) {
+
+            var shouldBeAt = parentObj.data.length - 1;
+
+            var item = parentObj.data[shouldBeAt];
+
+            // old parent and old item id perhas should be also defined?
+            if (item.__id == a[2]) {
+
+              // the command which appears to be run, sent to the data listeners
+              var tmpCmd = [8, shouldBeAt, item.__id, null, parentObj.__id];
+
+              // too simple still...
+              parentObj.data.splice(shouldBeAt, 1);
+
+              this._cmd(tmpCmd);
+            }
+          }
+        };
+
+        /**
          * @param Array a
          */
         _myTrait_._reverse_setProperty = function (a) {
