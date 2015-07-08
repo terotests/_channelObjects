@@ -71,7 +71,7 @@ is
 Creating actions as commands gives also the benefit of the command history thus creates history ready to be used for undo / redo actions.
 
 
-# Action 
+# Actions 
 
 Action is intent to change the value of the object into something else. Action data looks like this:
 
@@ -258,6 +258,24 @@ dataTest.getData();         // returns data with __id values
 dataTest.toPlainData();     // returns data as regular JavaScript object with no __id values
 ```
 
+# Reversing Actions 
+
+Actions in the journal must be reversable. This means that each command should have enought information to reverse the operation it has created.
+
+Reversing commands can be done using either `reverseToLine` or `reverseNLines`  
+
+```javascript
+// reverses the journal so that 14 commands remain
+dataTest.reverseToLine( 14 ); 
+// pop 4 commands
+dataTest.reverseNLines( 4 ); 
+```
+
+Each reverse command is run in reverse[sic] order - that is the last command will be ran first and so on.
+
+The workers will receive commands which create the opposite action to created action.
+
+
 # Workers
 
 A demo of workers
@@ -313,6 +331,7 @@ dataTest.createWorker("set_input",                        // worker ID
                       [4, "name", null, null, "<GUID>"],  // filter
                       { target : myInput});               // options
 ```
+
 
 
 
@@ -435,8 +454,11 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_reverse_setPropertyObject](README.md#commad_trait__reverse_setPropertyObject)
 - [_reverse_unsetProperty](README.md#commad_trait__reverse_unsetProperty)
 - [execCmd](README.md#commad_trait_execCmd)
+- [getJournalLine](README.md#commad_trait_getJournalLine)
 - [getLocalJournal](README.md#commad_trait_getLocalJournal)
 - [reverseCmd](README.md#commad_trait_reverseCmd)
+- [reverseNLines](README.md#commad_trait_reverseNLines)
+- [reverseToLine](README.md#commad_trait_reverseToLine)
 - [writeLocalJournal](README.md#commad_trait_writeLocalJournal)
 
 
@@ -1904,6 +1926,13 @@ if(c) {
 }
 ```
 
+### <a name="commad_trait_getJournalLine"></a>commad_trait::getJournalLine(t)
+
+
+```javascript
+return this._journal.length;
+```
+
 ### <a name="commad_trait_getLocalJournal"></a>commad_trait::getLocalJournal(t)
 
 
@@ -1954,6 +1983,34 @@ var c = _reverseCmds[a[0]];
 if(c) {
     var rv =  c.apply(this, [a]);
     return rv;
+}
+```
+
+### <a name="commad_trait_reverseNLines"></a>commad_trait::reverseNLines(n)
+
+
+```javascript
+// if one line in buffer line == 1
+var line = this.getJournalLine(); 
+
+while( ( line - 1 )  >= 0 &&  ( (n--) > 0 )) {
+    var cmd = this._journal[line - 1];
+    this.reverseCmd( cmd );
+    line--;
+}
+```
+
+### <a name="commad_trait_reverseToLine"></a>commad_trait::reverseToLine(index)
+
+0 = reverse all commands, 1 = reverse to the first line etc.
+```javascript
+// if one line in buffer line == 1
+var line = this.getJournalLine(); 
+
+while( ( line - 1 )  >= 0 &&  line > ( index  ) ) {
+    var cmd = this._journal[line - 1];
+    this.reverseCmd( cmd );
+    line--;
 }
 ```
 

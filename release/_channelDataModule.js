@@ -921,6 +921,13 @@
         /**
          * @param float t
          */
+        _myTrait_.getJournalLine = function (t) {
+          return this._journal.length;
+        };
+
+        /**
+         * @param float t
+         */
         _myTrait_.getLocalJournal = function (t) {
           return this._journal;
         };
@@ -967,6 +974,35 @@
           if (c) {
             var rv = c.apply(this, [a]);
             return rv;
+          }
+        };
+
+        /**
+         * @param int n
+         */
+        _myTrait_.reverseNLines = function (n) {
+          // if one line in buffer line == 1
+          var line = this.getJournalLine();
+
+          while (line - 1 >= 0 && n-- > 0) {
+            var cmd = this._journal[line - 1];
+            this.reverseCmd(cmd);
+            line--;
+          }
+        };
+
+        /**
+         * 0 = reverse all commands, 1 = reverse to the first line etc.
+         * @param int index
+         */
+        _myTrait_.reverseToLine = function (index) {
+          // if one line in buffer line == 1
+          var line = this.getJournalLine();
+
+          while (line - 1 >= 0 && line > index) {
+            var cmd = this._journal[line - 1];
+            this.reverseCmd(cmd);
+            line--;
           }
         };
 
