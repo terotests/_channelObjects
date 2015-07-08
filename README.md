@@ -253,6 +253,10 @@ dataTest.toPlainData();     // returns data as regular JavaScript object with no
 
 # Workers
 
+A demo of workers
+
+http://jsfiddle.net/mj8c3p5k/1/
+
 The workers are created to save memory and organize all the functions which are modifying the Object data in a single place.
 
 1. Workers save memory because they create no closures allocated for event handlers
