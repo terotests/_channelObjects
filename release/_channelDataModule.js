@@ -887,6 +887,24 @@
         };
 
         /**
+         * @param Array a
+         */
+        _myTrait_._reverse_unsetProperty = function (a) {
+          var obj = this._find(a[4]),
+              removedObj = this._find(a[2]),
+              prop = a[1];
+
+          if (obj && prop && removedObj) {
+
+            obj.data[prop] = removedObj;
+            removedObj.__p = obj.__id; // The parent relationship
+
+            var tmpCmd = [5, prop, removedObj.__id, 0, a[4]];
+            this._cmd(tmpCmd);
+          }
+        };
+
+        /**
          * @param float a
          * @param float isRemote
          */
@@ -934,6 +952,7 @@
             _reverseCmds[5] = this._reverse_setPropertyObject;
             _reverseCmds[7] = this._reverse_pushToArray;
             _reverseCmds[8] = this._reverse_removeObject;
+            _reverseCmds[10] = this._reverse_unsetProperty;
             _reverseCmds[12] = this._reverse_moveToIndex;
             // _reverse_setPropertyObject
           }

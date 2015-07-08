@@ -432,6 +432,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_reverse_removeObject](README.md#commad_trait__reverse_removeObject)
 - [_reverse_setProperty](README.md#commad_trait__reverse_setProperty)
 - [_reverse_setPropertyObject](README.md#commad_trait__reverse_setPropertyObject)
+- [_reverse_unsetProperty](README.md#commad_trait__reverse_unsetProperty)
 - [execCmd](README.md#commad_trait_execCmd)
 - [getLocalJournal](README.md#commad_trait_getLocalJournal)
 - [reverseCmd](README.md#commad_trait_reverseCmd)
@@ -1869,6 +1870,26 @@ this._cmd(tmpCmd);
 
 ```
 
+### <a name="commad_trait__reverse_unsetProperty"></a>commad_trait::_reverse_unsetProperty(a)
+
+
+```javascript
+var obj = this._find( a[4] ),
+    removedObj = this._find( a[2] ),
+    prop = a[1];
+
+if(obj && prop && removedObj) {
+
+
+    obj.data[prop] = removedObj;
+    removedObj.__p = obj.__id; // The parent relationship
+    
+    var tmpCmd = [5, prop, removedObj.__id, 0, a[4] ];
+    this._cmd(tmpCmd);
+
+}      
+```
+
 ### <a name="commad_trait_execCmd"></a>commad_trait::execCmd(a, isRemote)
 
 
@@ -1917,6 +1938,7 @@ if(!_cmds) {
     _reverseCmds[5] = this._reverse_setPropertyObject;
     _reverseCmds[7] = this._reverse_pushToArray;
     _reverseCmds[8] = this._reverse_removeObject;
+    _reverseCmds[10] = this._reverse_unsetProperty;
     _reverseCmds[12] = this._reverse_moveToIndex;
     // _reverse_setPropertyObject
     
