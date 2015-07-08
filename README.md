@@ -1914,9 +1914,11 @@ if(!_cmds) {
     _cmds[13] = this._cmd_aceCmd;
     
     _reverseCmds[4] = this._reverse_setProperty;
+    _reverseCmds[5] = this._reverse_setPropertyObject;
     _reverseCmds[7] = this._reverse_pushToArray;
     _reverseCmds[8] = this._reverse_removeObject;
     _reverseCmds[12] = this._reverse_moveToIndex;
+    // _reverse_setPropertyObject
     
 }
 ```
