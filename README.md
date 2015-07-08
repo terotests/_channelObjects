@@ -1,4 +1,4 @@
-# _channelData command runner
+# Data command runner
 
 The first run-down of the command runner. When sending arbitary object data over network in socket.io channels the journal data must be deconstructed into journal commands which are sent over the channel to the receivers. 
 
