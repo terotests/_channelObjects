@@ -1091,11 +1091,11 @@
         };
 
         /**
+         * @param string workerID
          * @param Array cmdFilter
-         * @param float workerID
-         * @param float workerOptions
+         * @param Object workerOptions
          */
-        _myTrait_.createWorker = function (cmdFilter, workerID, workerOptions) {
+        _myTrait_.createWorker = function (workerID, cmdFilter, workerOptions) {
 
           // cmdFilter could be something like this:
           // [ 4, 'x', null, null, 'GUID' ]

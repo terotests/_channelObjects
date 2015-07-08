@@ -287,7 +287,7 @@ Each worker is a function, which gets the current command `cmd` and the options 
 What is the  `options.target.value` ? When you create a worker, you specify the command filter, command ID and options.
 
 ```javascript
-dataTest.createWorker(<filter>, <workerID>, <options>);
+dataTest.createWorker(<workerID>, <filter>, <options>);
 ```
 
 The params are:
@@ -298,7 +298,7 @@ The params are:
 
 ```javascript
 var myInput = document.getElementById("someInput");
-dataTest.createWorker([4, "name", null, null, "<GUID>"], "set_input", { target : myInput});
+dataTest.createWorker("set_input", [4, "name", null, null, "<GUID>"],  { target : myInput});
 ```
 
 
@@ -1130,7 +1130,7 @@ var newObj = {
 return newObj;
 ```
 
-### <a name="_channelData_createWorker"></a>_channelData::createWorker(cmdFilter, workerID, workerOptions)
+### <a name="_channelData_createWorker"></a>_channelData::createWorker(workerID, cmdFilter, workerOptions)
 
 
 ```javascript
