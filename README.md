@@ -431,6 +431,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_reverse_pushToArray](README.md#commad_trait__reverse_pushToArray)
 - [_reverse_removeObject](README.md#commad_trait__reverse_removeObject)
 - [_reverse_setProperty](README.md#commad_trait__reverse_setProperty)
+- [_reverse_setPropertyObject](README.md#commad_trait__reverse_setPropertyObject)
 - [execCmd](README.md#commad_trait_execCmd)
 - [getLocalJournal](README.md#commad_trait_getLocalJournal)
 - [reverseCmd](README.md#commad_trait_reverseCmd)
@@ -1842,6 +1843,29 @@ if(obj) {
     obj.data[prop] = a[3];  // the old value
     this._cmd(tmpCmd);
 }
+```
+
+### <a name="commad_trait__reverse_setPropertyObject"></a>commad_trait::_reverse_setPropertyObject(a)
+
+Unfinished.
+```javascript
+
+var obj = this._find( a[4] ),
+    prop = a[1],
+    setObj = this._find( a[2] );
+
+if(!obj) return;
+if(!setObj) return;        
+
+// TODO problem: what if there was old object with some existing value
+// the old object should be saved before you can restore, simply deleting
+// the object is not good enough.
+
+delete obj.data[prop];   // removes the property object
+
+setObj.__p = obj.__id; // The parent relationship
+this._cmd(a, obj, setObj);
+
 ```
 
 ### <a name="commad_trait_execCmd"></a>commad_trait::execCmd(a, isRemote)
