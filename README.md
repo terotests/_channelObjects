@@ -1997,7 +1997,7 @@ if(c) {
 var line = this.getJournalLine(); 
 
 while( ( line - 1 )  >= 0 &&  ( (n--) > 0 )) {
-    var cmd = this._journal[line - 1];
+    var cmd = this._journal.pop();
     this.reverseCmd( cmd );
     line--;
 }
@@ -2011,7 +2011,7 @@ while( ( line - 1 )  >= 0 &&  ( (n--) > 0 )) {
 var line = this.getJournalLine(); 
 
 while( ( line - 1 )  >= 0 &&  line > ( index  ) ) {
-    var cmd = this._journal[line - 1];
+    var cmd = this._journal.pop();
     this.reverseCmd( cmd );
     line--;
 }
