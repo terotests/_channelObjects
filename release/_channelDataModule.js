@@ -858,9 +858,6 @@
           if (obj) {
             var tmpCmd = [4, prop, a[3], a[2], a[4]];
             obj.data[prop] = a[3]; // the old value
-            console.log("Reversing");
-            console.log(a);
-            console.log(tmpCmd);
             this._cmd(tmpCmd);
           }
         };
