@@ -92,6 +92,7 @@ The `4` represents the action code for "setProperty". Currently supported action
 Creates a new Object in the channels object cache. This object can then be added into arrays or set into properties of objects.
 
 Parameters:
+
 1. `1``
 2. GUID of the object to be created
 
@@ -102,6 +103,7 @@ Parameters:
 ## Create Array 
 
 Parameters:
+
 1. `2``
 2. GUID of the array to be created
 
@@ -145,6 +147,7 @@ Parameters:
 Array can only have object values, because scalar values can not be reliably identified in the Array structure.
 
 Parameters:
+
 1. `7``
 2. -
 3. GUID of the Object to be pushed
@@ -160,6 +163,7 @@ Parameters:
 Array can only have object values, because scalar values can not be reliably identified in the Array structure.
 
 Parameters:
+
 1. `8``
 2. -
 3. GUID of the Object to be removed
@@ -175,6 +179,7 @@ Parameters:
 Moves object item in the array
 
 Parameters:
+
 1. `12``
 2. GUID of the Object to be removed
 3. New index inside the array
@@ -191,6 +196,7 @@ Runs optimized ACE editor "like" commands to string. The values are compressed u
 class `aceCmdConvert` 
 
 Parameters:
+
 1. `13``
 2. GUID of the Object to be removed
 3. New index inside the array
