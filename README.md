@@ -93,7 +93,7 @@ Creates a new Object in the channels object cache. This object can then be added
 
 Parameters:
 
-1. `1``
+1. `1`
 2. GUID of the object to be created
 
 ```javascript
@@ -104,7 +104,7 @@ Parameters:
 
 Parameters:
 
-1. `2``
+1. `2`
 2. GUID of the array to be created
 
 ```javascript
@@ -117,7 +117,8 @@ Parameters:
 This command sets a value property (integer or string) to Object
 
 Parameters:
-1. `4``
+
+1. `4`
 2. the property name
 3. new value
 4. old value
@@ -132,7 +133,8 @@ Parameters:
 This command sets a property of an object to `Object` value. It will update the parent pointer at the object.
 
 Parameters:
-1. `4``
+
+1. `4`
 2. the property name
 3. GUID of the Object to be added to the property
 4. -
@@ -148,7 +150,7 @@ Array can only have object values, because scalar values can not be reliably ide
 
 Parameters:
 
-1. `7``
+1. `7`
 2. -
 3. GUID of the Object to be pushed
 4. -
@@ -164,7 +166,7 @@ Array can only have object values, because scalar values can not be reliably ide
 
 Parameters:
 
-1. `8``
+1. `8`
 2. -
 3. GUID of the Object to be removed
 4. -
@@ -180,7 +182,7 @@ Moves object item in the array
 
 Parameters:
 
-1. `12``
+1. `12`
 2. GUID of the Object to be removed
 3. New index inside the array
 4. -
@@ -197,7 +199,7 @@ class `aceCmdConvert`
 
 Parameters:
 
-1. `13``
+1. `13`
 2. GUID of the Object to be removed
 3. New index inside the array
 4. -
