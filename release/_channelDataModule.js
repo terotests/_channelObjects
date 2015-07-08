@@ -490,6 +490,7 @@
         var _execInfo;
         var _doingRemote;
         var _cmds;
+        var _reverseCmds;
 
         // Initialize static variables here...
 
@@ -738,6 +739,20 @@
         _myTrait_._moveCmdListToParent = function (t) {};
 
         /**
+         * @param Array a
+         */
+        _myTrait_._reverse_setProperty = function (a) {
+          var obj = this._find(a[4]),
+              prop = a[1];
+
+          if (obj) {
+            var tmpCmd = [4, prop, a[3], a[2], a[4]];
+            obj.data[prop] = a[3]; // the old value
+            this._cmd(tmpCmd);
+          }
+        };
+
+        /**
          * @param float a
          * @param float isRemote
          */
@@ -745,8 +760,17 @@
 
           var c = _cmds[a[0]];
           if (c) {
-            return c.apply(this, [a, isRemote]);
+            var rv = c.apply(this, [a, isRemote]);
+            this.writeLocalJournal(a);
+            return rv;
           }
+        };
+
+        /**
+         * @param float t
+         */
+        _myTrait_.getLocalJournal = function (t) {
+          return this._journal;
         };
 
         if (_myTrait_.__traitInit && !_myTrait_.hasOwnProperty("__traitInit")) _myTrait_.__traitInit = _myTrait_.__traitInit.slice();
@@ -759,6 +783,7 @@
 
           if (!_cmds) {
 
+            _reverseCmds = new Array(30);
             _cmds = new Array(30);
 
             _cmds[1] = this._cmd_createObject;
@@ -770,8 +795,30 @@
             _cmds[10] = this._cmd_unsetProperty;
             _cmds[12] = this._cmd_moveToIndex;
             _cmds[13] = this._cmd_aceCmd;
+
+            _reverseCmds[4] = this._reverse_setProperty;
           }
         });
+
+        /**
+         * This function reverses a given command. There may be cases when the command parameters make the command itself non-reversable. It is the responsibility of the framework to make sure all commands remain reversable.
+         * @param float a
+         */
+        _myTrait_.reverseCmd = function (a) {
+          var c = _reverseCmds[a[0]];
+          if (c) {
+            var rv = c.apply(this, [a]);
+            return rv;
+          }
+        };
+
+        /**
+         * @param Array cmd
+         */
+        _myTrait_.writeLocalJournal = function (cmd) {
+
+          if (this._journal) this._journal.push(cmd);
+        };
       })(this);
 
       (function (_myTrait_) {
@@ -1194,6 +1241,7 @@
           var me = this;
           this._data = mainData;
           this._workers = {};
+          this._journal = journalCmds || [];
 
           var newData = this._findObjects(mainData);
           if (newData != mainData) this._data = newData;

@@ -421,7 +421,11 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_cmd_unsetProperty](README.md#commad_trait__cmd_unsetProperty)
 - [_fireListener](README.md#commad_trait__fireListener)
 - [_moveCmdListToParent](README.md#commad_trait__moveCmdListToParent)
+- [_reverse_setProperty](README.md#commad_trait__reverse_setProperty)
 - [execCmd](README.md#commad_trait_execCmd)
+- [getLocalJournal](README.md#commad_trait_getLocalJournal)
+- [reverseCmd](README.md#commad_trait_reverseCmd)
+- [writeLocalJournal](README.md#commad_trait_writeLocalJournal)
 
 
     
@@ -1243,6 +1247,7 @@ if(!this._objectHash) {
 var me = this;
 this._data = mainData;
 this._workers = {};
+this._journal = journalCmds || [];
 
 var newData = this._findObjects(mainData);
 if(newData != mainData ) this._data = newData;
@@ -1466,6 +1471,8 @@ The class has following internal singleton variables:
 * _doingRemote
         
 * _cmds
+        
+* _reverseCmds
         
         
 ### <a name="commad_trait__cmd_aceCmd"></a>commad_trait::_cmd_aceCmd(a, isRemote)
@@ -1703,6 +1710,20 @@ if(_listeners) {
 
 ```
 
+### <a name="commad_trait__reverse_setProperty"></a>commad_trait::_reverse_setProperty(a)
+
+
+```javascript
+var obj = this._find( a[4] ),
+    prop = a[1];
+
+if(obj) {
+    var tmpCmd = [4, prop, a[3], a[2], a[4] ];
+    obj.data[prop] = a[3];  // the old value
+    this._cmd(tmpCmd);
+}
+```
+
 ### <a name="commad_trait_execCmd"></a>commad_trait::execCmd(a, isRemote)
 
 
@@ -1710,8 +1731,17 @@ if(_listeners) {
 
 var c = _cmds[a[0]];
 if(c) {
-    return c.apply(this, [a, isRemote]);
+    var rv =  c.apply(this, [a, isRemote]);
+    this.writeLocalJournal( a );
+    return rv;
 }
+```
+
+### <a name="commad_trait_getLocalJournal"></a>commad_trait::getLocalJournal(t)
+
+
+```javascript
+return this._journal;
 ```
 
 ### commad_trait::constructor( t )
@@ -1725,6 +1755,7 @@ if(!_listeners) {
 
 if(!_cmds) {
     
+    _reverseCmds = new Array(30);
     _cmds = new Array(30);
     
     _cmds[1] = this._cmd_createObject;
@@ -1737,9 +1768,30 @@ if(!_cmds) {
     _cmds[12] = this._cmd_moveToIndex;
     _cmds[13] = this._cmd_aceCmd;
     
+    _reverseCmds[4] = this._reverse_setProperty;
+    
 }
 ```
         
+### <a name="commad_trait_reverseCmd"></a>commad_trait::reverseCmd(a)
+
+This function reverses a given command. There may be cases when the command parameters make the command itself non-reversable. It is the responsibility of the framework to make sure all commands remain reversable.
+```javascript
+var c = _reverseCmds[a[0]];
+if(c) {
+    var rv =  c.apply(this, [a]);
+    return rv;
+}
+```
+
+### <a name="commad_trait_writeLocalJournal"></a>commad_trait::writeLocalJournal(cmd)
+
+
+```javascript
+
+if(this._journal) this._journal.push(cmd);
+```
+
 
     
     
