@@ -1995,7 +1995,7 @@ if(obj && prop && removedObj) {
 }      
 ```
 
-### <a name="commad_trait_execCmd"></a>commad_trait::execCmd(a, isRemote)
+### <a name="commad_trait_execCmd"></a>commad_trait::execCmd(a, isRemote, isRedo)
 
 
 ```javascript
@@ -2003,7 +2003,7 @@ if(obj && prop && removedObj) {
 var c = _cmds[a[0]];
 if(c) {
     var rv =  c.apply(this, [a, isRemote]);
-    this.writeLocalJournal( a );
+    if(!isRedo) this.writeLocalJournal( a );
     return rv;
 }
 ```
@@ -2064,15 +2064,13 @@ if(!_cmds) {
 ```javascript
 // if one line in buffer line == 1
 var line = this.getJournalLine(); 
-
 n = n || 1;
-
 while( (n--) > 0 ) {
     
     var cmd = this._journal[line];
     if(!cmd) return;
     
-    this.execCmd( cmd );
+    this.execCmd( cmd, false, true );
     line++;
     this._journalPointer++;
 }
