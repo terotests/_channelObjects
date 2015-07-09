@@ -156,13 +156,13 @@ Array can only have object values, because scalar values can not be reliably ide
 Parameters:
 
 1. `7`
-2. -
+2. index to push the object
 3. GUID of the Object to be pushed
 4. -
 5. GUID of the Array to be modified
 
 ```javascript
- [7, 0, "<GUID>", 0, "<ParentGUID>"]
+ [7, 4, "<GUID>", 0, "<ParentGUID>"]
 ```
 
 ## Remove item from Array
@@ -369,6 +369,8 @@ dataTest.createWorker("set_input",                        // worker ID
     
     
     
+    
+    
 
 
    
@@ -443,15 +445,18 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_cmd_moveToIndex](README.md#commad_trait__cmd_moveToIndex)
 - [_cmd_pushToArray](README.md#commad_trait__cmd_pushToArray)
 - [_cmd_removeObject](README.md#commad_trait__cmd_removeObject)
+- [_cmd_setMeta](README.md#commad_trait__cmd_setMeta)
 - [_cmd_setProperty](README.md#commad_trait__cmd_setProperty)
 - [_cmd_setPropertyObject](README.md#commad_trait__cmd_setPropertyObject)
 - [_cmd_unsetProperty](README.md#commad_trait__cmd_unsetProperty)
 - [_fireListener](README.md#commad_trait__fireListener)
 - [_moveCmdListToParent](README.md#commad_trait__moveCmdListToParent)
 - [_reverse_aceCmd](README.md#commad_trait__reverse_aceCmd)
+- [_reverse_createObject](README.md#commad_trait__reverse_createObject)
 - [_reverse_moveToIndex](README.md#commad_trait__reverse_moveToIndex)
 - [_reverse_pushToArray](README.md#commad_trait__reverse_pushToArray)
 - [_reverse_removeObject](README.md#commad_trait__reverse_removeObject)
+- [_reverse_setMeta](README.md#commad_trait__reverse_setMeta)
 - [_reverse_setProperty](README.md#commad_trait__reverse_setProperty)
 - [_reverse_setPropertyObject](README.md#commad_trait__reverse_setPropertyObject)
 - [_reverse_unsetProperty](README.md#commad_trait__reverse_unsetProperty)
@@ -480,6 +485,41 @@ dataTest.createWorker("set_input",                        // worker ID
 
       
     
+      
+            
+#### Class changeFrame
+
+
+- [doesConflict](README.md#changeFrame_doesConflict)
+- [validityCheck](README.md#changeFrame_validityCheck)
+
+
+
+   
+    
+##### trait _dataTrait
+
+- [addController](README.md#_dataTrait_addController)
+- [clone](README.md#_dataTrait_clone)
+- [emitValue](README.md#_dataTrait_emitValue)
+- [guid](README.md#_dataTrait_guid)
+- [isArray](README.md#_dataTrait_isArray)
+- [isFunction](README.md#_dataTrait_isFunction)
+- [isObject](README.md#_dataTrait_isObject)
+
+
+    
+    
+
+
+   
+      
+    
+
+
+
+      
+    
 
 
 
@@ -501,6 +541,8 @@ The class has following internal singleton variables:
 
 
    
+    
+    
     
     
     
@@ -1735,6 +1777,27 @@ if( parentObj && removedItem) {
 }
 ```
 
+### <a name="commad_trait__cmd_setMeta"></a>commad_trait::_cmd_setMeta(a, isRemote)
+
+
+```javascript
+var obj = this._find( a[4] ),
+    prop = a[1];
+
+if(obj) {
+    
+    if( obj[prop] == a[2] ) return;
+
+    obj[prop] = a[2]; // value is now set...
+    this._cmd(a, obj, null);
+    
+    // Saving the write to root document
+    if(!isRemote) {
+        this.writeCommand(a);
+    } 
+}
+```
+
 ### <a name="commad_trait__cmd_setProperty"></a>commad_trait::_cmd_setProperty(a, isRemote)
 
 
@@ -1845,6 +1908,16 @@ this._cmd(tmpCmd2);
 
 ```
 
+### <a name="commad_trait__reverse_createObject"></a>commad_trait::_reverse_createObject(a)
+
+
+```javascript
+var objId =  a[1];
+var hash = this._getObjectHash();
+delete hash[objId];
+
+```
+
 ### <a name="commad_trait__reverse_moveToIndex"></a>commad_trait::_reverse_moveToIndex(a)
 
 
@@ -1939,6 +2012,20 @@ if( parentObj && removedItem) {
     this._cmd(tmpCmd);
     
     removedItem.__p = a[4];
+}
+```
+
+### <a name="commad_trait__reverse_setMeta"></a>commad_trait::_reverse_setMeta(a)
+
+
+```javascript
+var obj = this._find( a[4] ),
+    prop = a[1];
+
+if(obj) {
+    var tmpCmd = [3, prop, a[3], a[2], a[4] ];
+    obj[prop] = a[3];  // the old value
+    this._cmd(tmpCmd);
 }
 ```
 
@@ -2039,6 +2126,7 @@ if(!_cmds) {
     
     _cmds[1] = this._cmd_createObject;
     _cmds[2] = this._cmd_createArray;
+    _cmds[3] = this._cmd_setMeta;
     _cmds[4] = this._cmd_setProperty;
     _cmds[5] = this._cmd_setPropertyObject;
     _cmds[7] = this._cmd_pushToArray;
@@ -2047,6 +2135,7 @@ if(!_cmds) {
     _cmds[12] = this._cmd_moveToIndex;
     _cmds[13] = this._cmd_aceCmd;
     
+    _reverseCmds[3] = this._reverse_setMeta;
     _reverseCmds[4] = this._reverse_setProperty;
     _reverseCmds[5] = this._reverse_setPropertyObject;
     _reverseCmds[7] = this._reverse_pushToArray;
@@ -2150,6 +2239,346 @@ if(this._journal) {
    
       
     
+      
+    
+
+
+
+      
+    
+      
+            
+# Class changeFrame
+
+
+The class has following internal singleton variables:
+        
+        
+### <a name="changeFrame_doesConflict"></a>changeFrame::doesConflict(changeData)
+
+
+```javascript
+
+/*
+{
+    from : 20
+    to : 40,
+    changes : [
+       [4, "x", 50, 30, guid],
+       [4, "y", 50, 30, guid]
+    ]    
+}
+*/
+
+var res = {
+    error : false
+};
+
+var currLine = this._channel.getJournalLine();
+
+// if we are just appending the data to the end, the change could be ok
+if(currLine == changeData.from) {
+    
+    // should be ready to be run, the actual run of the changeFrame or "transaction"
+    // can still be discarding the change packet
+    res.ok = true;
+    return res;
+    
+} else {
+    
+    if(currLine < changeData.from) {
+        res.error = true;
+        res.reason = "the journals are out of sync";
+        return res;
+    } else {
+        
+        // there has been some writes to the journal which may conflict with
+        // new changes
+        
+    }
+}
+```
+
+### changeFrame::constructor( channelObj )
+
+```javascript
+
+this._channel = channelObj;
+```
+        
+### <a name="changeFrame_validityCheck"></a>changeFrame::validityCheck(changeData)
+
+
+```javascript
+
+var me = this;
+var currLine = this._channel.getJournalLine();
+var ch = this._channel;
+
+var validCmds = [];
+
+var res = {
+    invalidCmds : [],
+    invalidPrevSet  : [],
+    valid : validCmds
+};
+
+if(!changeData || !(this.isArray(changeData.changes))) {
+    return res;
+}
+var list = changeData.changes;
+
+var _setValues = {},
+    _createdObjs = {},
+    _createdArrs = {};
+
+for(var i=0; i<list.length; i++) {
+    
+    var cmd = list[i];
+    
+    if(!this.isArray(cmd)) {
+        res.invalidCmds.push(cmd);
+        continue;
+    }
+    
+    var ci = cmd[0];
+    
+    if(ci==1 || ci==2 ) {
+        var o = ch._find(cmd[1]);     
+        if(!o) {
+            if(ci==1) _createdObjs[cmd[1]] = true;
+            if(ci==2) _createdArrs[cmd[1]] = true;
+            validCmds.push(cmd);
+        } else {
+            res.invalidCmds.push(cmd);
+        }
+        continue;
+    }
+    if( ci==3 ) {
+        validCmds.push(cmd);
+        // security check, perhaps not done for the channel, is it?
+        continue;
+    }
+    if( ci==4 ) {
+        // test if the object really really exists
+        var objId = cmd[4],
+            prop = cmd[1];
+        if(!prop) {
+            res.invalidCmds.push(cmd);
+            continue;            
+        }    
+        var o = ch._find(objId);
+        if( ( !o || !this.isObject(o.data) ) && !_createdObjs[cmd[4]]) {
+            res.invalidCmds.push(cmd);
+            continue;
+        }
+        // then check that the previous value of the object and current are the same
+        if( o.data[prop] != cmd[3]) {
+            if( _setValues[objId] && 
+                ( typeof( _setValues[objId][prop] ) != "undefined") && 
+                _setValues[objId][prop] == cmd[3]) {
+                // the old value and set value are ok.   
+            } else {
+                res.invalidPrevSet.push(cmd);
+                continue;       
+            }
+        }
+        if(!_setValues[objId]) _setValues[objId] = {};
+        _setValues[objId][prop] = cmd[2];
+        validCmds.push(cmd);
+        continue;
+    }    
+    if( ci==5 ) {
+
+        var objId = cmd[4],
+            insertId = cmd[2],
+            prop = cmd[1];
+        if(!prop) {
+            res.invalidCmds.push(cmd);
+            continue;            
+        }    
+
+        var o1 = ch._find(objId),
+            o2 = ch._find(insertId);
+        if( ( !o1 && !_createdObjs[objId]) || (!o2 && !_createdObjs[insertId]) ) {
+            res.invalidCmds.push(cmd);
+            continue;
+        }        
+        validCmds.push(cmd);
+        continue;        
+        
+    }
+    if( ci== 7 ) {
+
+        var objId = cmd[4],
+            insertId = cmd[2],
+            prop = parseInt( cmd[1] );
+        if(isNaN( prop) ) {
+            res.invalidCmds.push(cmd);
+            continue;            
+        }    
+
+        var o1 = ch._find(objId),
+            o2 = ch._find(insertId);
+        if( ( !o2 && !_createdObjs[insertId])  ) {
+            res.invalidCmds.push(cmd);
+            continue;
+        }        
+        
+        // check that it is array, it is hard to check if the array has room or not
+        if(!o1 || !this.isArray(o1.data) ) {
+            res.invalidCmds.push(cmd);
+            continue;            
+        }
+        validCmds.push(cmd);
+
+        continue; 
+    }
+}
+
+
+```
+
+
+
+   
+    
+## trait _dataTrait
+
+The class has following internal singleton variables:
+        
+* _eventOn
+        
+* _commands
+        
+        
+### <a name="_dataTrait_addController"></a>_dataTrait::addController(c)
+
+
+```javascript
+if(!this._controllers)
+    this._controllers = [];
+    
+if(this._controllers.indexOf(c)>=0) return;
+
+this._controllers.push(c);
+```
+
+### <a name="_dataTrait_clone"></a>_dataTrait::clone(t)
+
+
+```javascript
+return _data(this.serialize());
+```
+
+### <a name="_dataTrait_emitValue"></a>_dataTrait::emitValue(scope, data)
+
+
+```javascript
+if(this._processingEmit) return this;
+
+this._processingEmit = true;
+// adding controllers to the data...
+if(this._controllers) {
+    var cnt = 0;
+    for(var i=0; i<this._controllers.length; i++) {
+        var c = this._controllers[i];
+        if(c[scope]) {
+           c[scope](data);
+           cnt++;
+        }
+    }
+    this._processingEmit = false;
+    if(cnt>0) return this;
+}
+/*
+if(this._controller) {
+    if(this._controller[scope]) {
+       this._controller[scope](data);
+       return;
+    }
+}
+*/
+
+if(this._valueFn && this._valueFn[scope]) {
+    this._valueFn[scope](data);
+} else {
+    if(this._parent) {
+        if(!this._parent.emitValue) {
+            // console.log("Strange... no emit value in ", this._parent);
+        } else {
+            this._parent.emitValue(scope,data);
+        }
+    }
+}
+this._processingEmit = false;
+```
+
+### <a name="_dataTrait_guid"></a>_dataTrait::guid(t)
+
+
+```javascript
+
+return Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15);
+        
+//return Math.random();
+// return Math.random().toString(36);
+        
+/*    
+return Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15);
+*/
+/*        
+function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+               .toString(16)
+               .substring(1);
+  }
+
+return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+       s4() + '-' + s4() + s4() + s4();*/
+```
+
+### _dataTrait::constructor( data, options, notUsed, notUsed2 )
+
+```javascript
+
+```
+        
+### <a name="_dataTrait_isArray"></a>_dataTrait::isArray(t)
+
+
+```javascript
+
+if(typeof(t)=="undefined") return this.__isA;
+
+return Object.prototype.toString.call( t ) === '[object Array]';
+```
+
+### <a name="_dataTrait_isFunction"></a>_dataTrait::isFunction(fn)
+
+
+```javascript
+return Object.prototype.toString.call(fn) == '[object Function]';
+```
+
+### <a name="_dataTrait_isObject"></a>_dataTrait::isObject(t)
+
+
+```javascript
+
+if(typeof(t)=="undefined") return this.__isO;
+
+return t === Object(t);
+```
+
+
+    
+    
+
+
+   
       
     
 
