@@ -257,17 +257,18 @@ dataTest.toPlainData();     // returns data as regular JavaScript object with no
 
 # Reversing Actions 
 
-Testing reverse with workers demo : http://jsfiddle.net/Lx700xdq/
+Testing reverse with workers demo : http://jsfiddle.net/aeqndvsu/
 
 Actions in the journal must be reversable. This means that each command should have enought information to reverse the operation it has created.
 
-Reversing commands can be done using either `reverseToLine` or `reverseNLines`  
+Reversing commands can be done using either `undo` or `redo`  
 
 ```javascript
-// reverses the journal so that 14 commands remain
-dataTest.reverseToLine( 14 ); 
-// pop 4 commands
-dataTest.reverseNLines( 4 ); 
+dataTest.undo();  // undo 1 command 
+dataTest.redo();  // redo 1 command
+
+dataTest.undo(4);  // undo 4 commands
+dataTest.redo(4);  // redo 4 commands
 ```
 
 Each reverse command is run in reverse[sic] order - that is the last command will be ran first and so on.
