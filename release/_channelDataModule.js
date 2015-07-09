@@ -996,7 +996,7 @@
          * @param float t
          */
         _myTrait_.getJournalLine = function (t) {
-          return this._journal.length;
+          return this._journalPointer;
         };
 
         /**
@@ -1041,6 +1041,26 @@
         });
 
         /**
+         * @param float n
+         */
+        _myTrait_.redo = function (n) {
+          // if one line in buffer line == 1
+          var line = this.getJournalLine();
+
+          n = n || 1;
+
+          while (n-- > 0) {
+
+            var cmd = this._journal[line];
+            if (!cmd) return;
+
+            this.execCmd(cmd);
+            line++;
+            this._journalPointer++;
+          }
+        };
+
+        /**
          * This function reverses a given command. There may be cases when the command parameters make the command itself non-reversable. It is the responsibility of the framework to make sure all commands remain reversable.
          * @param float a
          */
@@ -1060,9 +1080,10 @@
           var line = this.getJournalLine();
 
           while (line - 1 >= 0 && n-- > 0) {
-            var cmd = this._journal.pop();
+            var cmd = this._journal[line - 1];
             this.reverseCmd(cmd);
             line--;
+            this._journalPointer--;
           }
         };
 
@@ -1075,10 +1096,19 @@
           var line = this.getJournalLine();
 
           while (line - 1 >= 0 && line > index) {
-            var cmd = this._journal.pop();
+            var cmd = this._journal[line - 1];
             this.reverseCmd(cmd);
             line--;
+            this._journalPointer--;
           }
+        };
+
+        /**
+         * @param int n
+         */
+        _myTrait_.undo = function (n) {
+
+          this.reverseNLines(n || 1);
         };
 
         /**
@@ -1086,7 +1116,14 @@
          */
         _myTrait_.writeLocalJournal = function (cmd) {
 
-          if (this._journal) this._journal.push(cmd);
+          if (this._journal) {
+            // truncate on write if length > journalPointer
+            if (this._journal.length > this._journalPointer) {
+              this._journal.length = this._journalPointer;
+            }
+            this._journal.push(cmd);
+            this._journalPointer++;
+          }
         };
       })(this);
 
@@ -1511,6 +1548,7 @@
           this._data = mainData;
           this._workers = {};
           this._journal = journalCmds || [];
+          this._journalPointer = this._journal.length;
 
           var newData = this._findObjects(mainData);
           if (newData != mainData) this._data = newData;

@@ -457,9 +457,11 @@ dataTest.createWorker("set_input",                        // worker ID
 - [execCmd](README.md#commad_trait_execCmd)
 - [getJournalLine](README.md#commad_trait_getJournalLine)
 - [getLocalJournal](README.md#commad_trait_getLocalJournal)
+- [redo](README.md#commad_trait_redo)
 - [reverseCmd](README.md#commad_trait_reverseCmd)
 - [reverseNLines](README.md#commad_trait_reverseNLines)
 - [reverseToLine](README.md#commad_trait_reverseToLine)
+- [undo](README.md#commad_trait_undo)
 - [writeLocalJournal](README.md#commad_trait_writeLocalJournal)
 
 
@@ -1338,6 +1340,7 @@ var me = this;
 this._data = mainData;
 this._workers = {};
 this._journal = journalCmds || [];
+this._journalPointer = this._journal.length;
 
 var newData = this._findObjects(mainData);
 if(newData != mainData ) this._data = newData;
@@ -2009,7 +2012,7 @@ if(c) {
 
 
 ```javascript
-return this._journal.length;
+return this._journalPointer;
 ```
 
 ### <a name="commad_trait_getLocalJournal"></a>commad_trait::getLocalJournal(t)
@@ -2055,6 +2058,26 @@ if(!_cmds) {
 }
 ```
         
+### <a name="commad_trait_redo"></a>commad_trait::redo(n)
+
+
+```javascript
+// if one line in buffer line == 1
+var line = this.getJournalLine(); 
+
+n = n || 1;
+
+while( (n--) > 0 ) {
+    
+    var cmd = this._journal[line];
+    if(!cmd) return;
+    
+    this.execCmd( cmd );
+    line++;
+    this._journalPointer++;
+}
+```
+
 ### <a name="commad_trait_reverseCmd"></a>commad_trait::reverseCmd(a)
 
 This function reverses a given command. There may be cases when the command parameters make the command itself non-reversable. It is the responsibility of the framework to make sure all commands remain reversable.
@@ -2074,9 +2097,10 @@ if(c) {
 var line = this.getJournalLine(); 
 
 while( ( line - 1 )  >= 0 &&  ( (n--) > 0 )) {
-    var cmd = this._journal.pop();
+    var cmd = this._journal[line-1];
     this.reverseCmd( cmd );
     line--;
+    this._journalPointer--;
 }
 ```
 
@@ -2088,10 +2112,20 @@ while( ( line - 1 )  >= 0 &&  ( (n--) > 0 )) {
 var line = this.getJournalLine(); 
 
 while( ( line - 1 )  >= 0 &&  line > ( index  ) ) {
-    var cmd = this._journal.pop();
+    var cmd = this._journal[line-1];
     this.reverseCmd( cmd );
     line--;
+    this._journalPointer--;
 }
+```
+
+### <a name="commad_trait_undo"></a>commad_trait::undo(n)
+
+
+```javascript
+
+this.reverseNLines( n || 1);
+
 ```
 
 ### <a name="commad_trait_writeLocalJournal"></a>commad_trait::writeLocalJournal(cmd)
@@ -2099,7 +2133,14 @@ while( ( line - 1 )  >= 0 &&  line > ( index  ) ) {
 
 ```javascript
 
-if(this._journal) this._journal.push(cmd);
+if(this._journal) {
+    // truncate on write if length > journalPointer
+    if(this._journal.length > this._journalPointer) {
+        this._journal.length = this._journalPointer;
+    }
+    this._journal.push(cmd);
+    this._journalPointer++;
+}
 ```
 
 
