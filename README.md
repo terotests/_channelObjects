@@ -9,6 +9,7 @@ The main file and journal are ment to be used together with (Channels)[https://g
 1. All commands should be reversable => not the case right now
 2. Create enough test coverage for special cases and errors
 3. moving objects from one subtree to other + reversing that is missing
+4. the ACE editor double "set" for text fields should be checked
 
 
 # Object 
@@ -380,6 +381,7 @@ dataTest.createWorker("set_input",                        // worker ID
 
 
 - [fromAce](README.md#aceCmdConvert_fromAce)
+- [reverse](README.md#aceCmdConvert_reverse)
 - [runToAce](README.md#aceCmdConvert_runToAce)
 - [runToLineObj](README.md#aceCmdConvert_runToLineObj)
 - [runToString](README.md#aceCmdConvert_runToString)
@@ -449,6 +451,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_cmd_unsetProperty](README.md#commad_trait__cmd_unsetProperty)
 - [_fireListener](README.md#commad_trait__fireListener)
 - [_moveCmdListToParent](README.md#commad_trait__moveCmdListToParent)
+- [_reverse_aceCmd](README.md#commad_trait__reverse_aceCmd)
 - [_reverse_moveToIndex](README.md#commad_trait__reverse_moveToIndex)
 - [_reverse_pushToArray](README.md#commad_trait__reverse_pushToArray)
 - [_reverse_removeObject](README.md#commad_trait__reverse_removeObject)
@@ -584,6 +587,61 @@ return newList;
 
 ```
         
+### <a name="aceCmdConvert_reverse"></a>aceCmdConvert::reverse(cmdList)
+
+
+```javascript
+
+var newList = [];
+
+cmdList.forEach( function(oldCmd) {
+    
+    var cmd = oldCmd.slice(); // create a copy of the old command
+    
+    var row = cmd[1],
+        col = cmd[2],
+        endRow = cmd[3],
+        endCol = cmd[4];
+        
+    // add characters...
+    if(cmd[0]==1) {
+        cmd[0] = 2;
+        newList.unshift( cmd );
+        return; // this simple ???
+    }
+    if(cmd[0]==2) {
+        cmd[0] = 1;
+        newList.unshift( cmd );
+        return; // this simple ???
+    }    
+    if(cmd[0]==3) {
+        cmd[0] = 4;
+        newList.unshift( cmd );
+        return; // this simple ???      
+        /*
+        var cnt = endRow - row;
+        for(var i=0; i<cnt; i++) {
+            lines.splice(row+i, 0, cmd[5][i]);
+        } 
+        */
+    }
+    if(cmd[0]==4) {
+        cmd[0] = 3;
+        newList.unshift( cmd );
+        return; // this simple ???   
+        /*
+        var cnt = endRow - row;
+        for(var i=0; i<cnt; i++) {
+            lines.splice(row, 1);
+        } 
+        */
+    }    
+    
+});
+
+return newList;
+```
+
 ### <a name="aceCmdConvert_runToAce"></a>aceCmdConvert::runToAce(cmdList)
 
 
@@ -1323,13 +1381,12 @@ for(var i in cmdObject) {
 
 ```javascript
 
-if(!obj) obj = this._data;
+if(typeof( obj ) == "undefined" ) obj = this._data;
 
 if(!this.isObject(obj)) return obj;
 
 var plain;
 
-if( obj.getData ) obj = obj.getData();
 
 if(this.isArray(obj.data)) {
     plain = [];
@@ -1760,6 +1817,34 @@ if(_listeners) {
 
 ```
 
+### <a name="commad_trait__reverse_aceCmd"></a>commad_trait::_reverse_aceCmd(a)
+
+
+```javascript
+
+
+var obj = this._find( a[4] ),
+    prop = a[1];
+
+var conv = aceCmdConvert();
+
+var newCmds = conv.reverse( a[2] );
+
+var tmpCmd = [4, prop, obj.data[prop], null, a[4] ];
+var tmpCmd2 = [13, prop, newCmds, null, a[4] ];
+
+var s = conv.runToString( obj.data[prop], newCmds );
+obj.data[prop] = s;
+
+// The actual command to be run at the "cmd" level...
+
+
+// perhaps a problematic reverse... ?
+this._cmd(tmpCmd);      
+this._cmd(tmpCmd2);
+
+```
+
 ### <a name="commad_trait__reverse_moveToIndex"></a>commad_trait::_reverse_moveToIndex(a)
 
 
@@ -1972,6 +2057,7 @@ if(!_cmds) {
     _reverseCmds[8] = this._reverse_removeObject;
     _reverseCmds[10] = this._reverse_unsetProperty;
     _reverseCmds[12] = this._reverse_moveToIndex;
+    _reverseCmds[13] = this._reverse_aceCmd;
     // _reverse_setPropertyObject
     
 }

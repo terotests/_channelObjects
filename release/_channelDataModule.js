@@ -56,6 +56,60 @@
         _myTrait_.__traitInit.push(function (onFulfilled, onRejected) {});
 
         /**
+         * @param Array cmdList
+         */
+        _myTrait_.reverse = function (cmdList) {
+
+          var newList = [];
+
+          cmdList.forEach(function (oldCmd) {
+
+            var cmd = oldCmd.slice(); // create a copy of the old command
+
+            var row = cmd[1],
+                col = cmd[2],
+                endRow = cmd[3],
+                endCol = cmd[4];
+
+            // add characters...
+            if (cmd[0] == 1) {
+              cmd[0] = 2;
+              newList.unshift(cmd);
+              return; // this simple ???
+            }
+            if (cmd[0] == 2) {
+              cmd[0] = 1;
+              newList.unshift(cmd);
+              return; // this simple ???
+            }
+            if (cmd[0] == 3) {
+              cmd[0] = 4;
+              newList.unshift(cmd);
+              return; // this simple ???     
+              /*
+              var cnt = endRow - row;
+              for(var i=0; i<cnt; i++) {
+              lines.splice(row+i, 0, cmd[5][i]);
+              } 
+              */
+            }
+            if (cmd[0] == 4) {
+              cmd[0] = 3;
+              newList.unshift(cmd);
+              return; // this simple ???  
+              /*
+              var cnt = endRow - row;
+              for(var i=0; i<cnt; i++) {
+              lines.splice(row, 1);
+              } 
+              */
+            }
+          });
+
+          return newList;
+        };
+
+        /**
          * @param float cmdList
          */
         _myTrait_.runToAce = function (cmdList) {
@@ -756,6 +810,31 @@
         /**
          * @param float a
          */
+        _myTrait_._reverse_aceCmd = function (a) {
+
+          var obj = this._find(a[4]),
+              prop = a[1];
+
+          var conv = aceCmdConvert();
+
+          var newCmds = conv.reverse(a[2]);
+
+          var tmpCmd = [4, prop, obj.data[prop], null, a[4]];
+          var tmpCmd2 = [13, prop, newCmds, null, a[4]];
+
+          var s = conv.runToString(obj.data[prop], newCmds);
+          obj.data[prop] = s;
+
+          // The actual command to be run at the "cmd" level...
+
+          // perhaps a problematic reverse... ?
+          this._cmd(tmpCmd);
+          this._cmd(tmpCmd2);
+        };
+
+        /**
+         * @param float a
+         */
         _myTrait_._reverse_moveToIndex = function (a) {
           var obj = this._find(a[4]),
               prop = "*",
@@ -961,6 +1040,7 @@
             _reverseCmds[8] = this._reverse_removeObject;
             _reverseCmds[10] = this._reverse_unsetProperty;
             _reverseCmds[12] = this._reverse_moveToIndex;
+            _reverseCmds[13] = this._reverse_aceCmd;
             // _reverse_setPropertyObject
           }
         });
@@ -1470,13 +1550,11 @@
          */
         _myTrait_.toPlainData = function (obj) {
 
-          if (!obj) obj = this._data;
+          if (typeof obj == "undefined") obj = this._data;
 
           if (!this.isObject(obj)) return obj;
 
           var plain;
-
-          if (obj.getData) obj = obj.getData();
 
           if (this.isArray(obj.data)) {
             plain = [];
