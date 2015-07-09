@@ -4,13 +4,9 @@ The first run-down of the command runner. When sending arbitary object data over
 
 The main file and journal are ment to be used together with (Channels)[https://github.com/terotests/_channels] which make possible forking the data into separate branches.
 
-# Known problems still
+# Limitations
 
-1. All commands should be reversable => not the case right now
-2. Create enough test coverage for special cases and errors
-3. moving objects from one subtree to other + reversing that is missing
-4. the ACE editor double "set" for text fields should be checked
-
+1. moving objects from one subtree to other is not allowed. The object must be removed first and then inserted to other subtree. This is to make client side view MVC code easier to implement.
 
 # Object 
 
@@ -1958,7 +1954,7 @@ if(obj) {
 
 ### <a name="commad_trait__reverse_setPropertyObject"></a>commad_trait::_reverse_setPropertyObject(a)
 
-Unfinished.
+
 ```javascript
 
 var obj = this._find( a[4] ),
@@ -1967,10 +1963,6 @@ var obj = this._find( a[4] ),
 
 if(!obj) return;
 if(!setObj) return;        
-
-// TODO problem: what if there was old object with some existing value
-// the old object should be saved before you can restore, simply deleting
-// the object is not good enough.
 
 delete obj.data[prop];   // removes the property object
 setObj.__p = null;

@@ -942,7 +942,6 @@
         };
 
         /**
-         * Unfinished.
          * @param float a
          */
         _myTrait_._reverse_setPropertyObject = function (a) {
@@ -953,10 +952,6 @@
 
           if (!obj) return;
           if (!setObj) return;
-
-          // TODO problem: what if there was old object with some existing value
-          // the old object should be saved before you can restore, simply deleting
-          // the object is not good enough.
 
           delete obj.data[prop]; // removes the property object
           setObj.__p = null;
