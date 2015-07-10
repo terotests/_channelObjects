@@ -1373,6 +1373,7 @@ if(!this._objectHash) {
 }
 
 var me = this;
+this._channelId = channelId;
 this._data = mainData;
 this._workers = {};
 this._journal = journalCmds || [];
@@ -2050,7 +2051,7 @@ try {
     var c = _cmds[a[0]];
     if(c) {
         var rv =  c.apply(this, [a, isRemote]);
-        if(!isRedo) this.writeLocalJournal( a );
+        if(rv && !isRedo) this.writeLocalJournal( a );
         return rv;
     } else {
         return false;
