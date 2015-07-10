@@ -422,101 +422,17 @@
         // Initialize static variables here...
 
         /**
-         * @param Object c
-         */
-        _myTrait_.addController = function (c) {
-          if (!this._controllers) this._controllers = [];
-
-          if (this._controllers.indexOf(c) >= 0) return;
-
-          this._controllers.push(c);
-        };
-
-        /**
-         * @param float t
-         */
-        _myTrait_.clone = function (t) {
-          return _data(this.serialize());
-        };
-
-        /**
-         * @param float scope
-         * @param float data
-         */
-        _myTrait_.emitValue = function (scope, data) {
-          if (this._processingEmit) return this;
-
-          this._processingEmit = true;
-          // adding controllers to the data...
-          if (this._controllers) {
-            var cnt = 0;
-            for (var i = 0; i < this._controllers.length; i++) {
-              var c = this._controllers[i];
-              if (c[scope]) {
-                c[scope](data);
-                cnt++;
-              }
-            }
-            this._processingEmit = false;
-            if (cnt > 0) return this;
-          }
-          /*
-          if(this._controller) {
-          if(this._controller[scope]) {
-          this._controller[scope](data);
-          return;
-          }
-          }
-          */
-
-          if (this._valueFn && this._valueFn[scope]) {
-            this._valueFn[scope](data);
-          } else {
-            if (this._parent) {
-              if (!this._parent.emitValue) {} else {
-                this._parent.emitValue(scope, data);
-              }
-            }
-          }
-          this._processingEmit = false;
-        };
-
-        /**
          * @param float t
          */
         _myTrait_.guid = function (t) {
-
           return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-          //return Math.random();
-          // return Math.random().toString(36);
-
-          /*    
-          return Math.random().toString(36).substring(2, 15) +
-          Math.random().toString(36).substring(2, 15);
-          */
-          /*        
-          function s4() {
-          return Math.floor((1 + Math.random()) * 0x10000)
-               .toString(16)
-               .substring(1);
-          }
-          return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-          s4() + '-' + s4() + s4() + s4();*/
         };
-
-        if (_myTrait_.__traitInit && !_myTrait_.hasOwnProperty("__traitInit")) _myTrait_.__traitInit = _myTrait_.__traitInit.slice();
-        if (!_myTrait_.__traitInit) _myTrait_.__traitInit = [];
-        _myTrait_.__traitInit.push(function (data, options, notUsed, notUsed2) {});
 
         /**
          * @param float t
          */
         _myTrait_.isArray = function (t) {
-
-          if (typeof t == "undefined") return this.__isA;
-
-          return Object.prototype.toString.call(t) === "[object Array]";
+          return t instanceof Array;
         };
 
         /**
@@ -530,9 +446,6 @@
          * @param float t
          */
         _myTrait_.isObject = function (t) {
-
-          if (typeof t == "undefined") return this.__isO;
-
           return t === Object(t);
         };
       })(this);
@@ -556,6 +469,9 @@
           var obj = this._find(a[4]),
               prop = a[1];
 
+          if (!obj || !prop) return false;
+          if (typeof obj.data[prop] != "string") return false;
+
           var conv = aceCmdConvert();
           obj.data[prop] = conv.runToString(obj.data[prop], a[2]);
 
@@ -571,6 +487,8 @@
           }
           _doingRemote = false;
           this._fireListener(obj, prop);
+
+          return true;
         };
 
         /**
@@ -578,15 +496,22 @@
          * @param float isRemote
          */
         _myTrait_._cmd_createArray = function (a, isRemote) {
+          var objId = a[1];
+          if (!objId) return false;
+
+          var hash = this._getObjectHash();
+          if (hash[objId]) return false;
+
           var newObj = {
             data: [],
-            __id: a[1]
+            __id: objId
           };
-          var hash = this._getObjectHash();
           hash[newObj.__id] = newObj;
+
           if (!isRemote) {
             this.writeCommand(a, newObj);
           }
+          return true;
         };
 
         /**
@@ -594,15 +519,22 @@
          * @param float isRemote
          */
         _myTrait_._cmd_createObject = function (a, isRemote) {
+          var objId = a[1];
+          if (!objId) return false;
+
+          var hash = this._getObjectHash();
+          if (hash[objId]) return false;
+
           var newObj = {
             data: {},
-            __id: a[1]
+            __id: objId
           };
-          var hash = this._getObjectHash();
           hash[newObj.__id] = newObj;
+
           if (!isRemote) {
             this.writeCommand(a, newObj);
           }
+          return true;
         };
 
         /**
@@ -616,6 +548,8 @@
               targetObj,
               i = 0;
 
+          if (!obj) return false;
+
           var oldIndex = null;
 
           for (i = 0; i < len; i++) {
@@ -627,9 +561,8 @@
             }
           }
 
-          if (oldIndex != a[3]) {
-            throw "moveToIndex with invalid old index value";
-            return;
+          if (oldIndex != a[3] || !targetObj) {
+            return false;
           }
 
           // Questions here:
@@ -641,19 +574,22 @@
           //  - where is the writeCommand?
           //
           // Moving the object in the array
-          if (targetObj) {
-            var targetIndex = parseInt(a[2]);
 
-            _execInfo.fromIndex = i;
+          var targetIndex = parseInt(a[2]);
+          if (isNaN(targetIndex)) return false;
 
-            obj.data.splice(i, 1);
-            obj.data.splice(targetIndex, 0, targetObj);
-            this._cmd(a, obj, targetObj);
+          if (obj.data.length <= i) return false;
 
-            if (!(isRemote || _isRemoteUpdate)) {
-              this.writeCommand(a);
-            }
+          _execInfo.fromIndex = i;
+
+          obj.data.splice(i, 1);
+          obj.data.splice(targetIndex, 0, targetObj);
+          this._cmd(a, obj, targetObj);
+
+          if (!(isRemote || _isRemoteUpdate)) {
+            this.writeCommand(a);
           }
+          return true;
         };
 
         /**
@@ -662,38 +598,37 @@
          */
         _myTrait_._cmd_pushToArray = function (a, isRemote) {
 
-          // old position
-          // [ "parentId", "index"]
-
           var parentObj = this._find(a[4]),
               insertedObj = this._find(a[2]),
-              toIndex = a[1],
+              toIndex = parseInt(a[1]),
               oldPos = a[3],
               // old position can also be "null"
           prop = "*",
               index = parentObj.data.length; // might check if valid...
 
-          // Moving the object in the array
-          if (parentObj && insertedObj) {
+          if (!parentObj || !insertedObj) return false;
 
-            // Do not isert the item into the array 2 times, test for that error
-            if (!insertedObj.__p || insertedObj.__p != parentObj.__id) {
-
-              // now the object is in the array...
-
-              parentObj.data.splice(toIndex, 0, insertedObj);
-
-              insertedObj.__p = parentObj.__id;
-              this._cmd(a, parentObj, insertedObj);
-
-              this._moveCmdListToParent(insertedObj);
-
-              // Saving the write to root document
-              if (!isRemote) {
-                this.writeCommand(a);
-              }
-            }
+          // NOTE: deny inserting object which already has been inserted
+          if (insertedObj.__p) return false;
+          if (isNaN(toIndex)) return false;
+          if (!this.isArray(parentObj.data)) return;
+          if (toIndex > parentObj.data.length) {
+            return false;
           }
+
+          parentObj.data.splice(toIndex, 0, insertedObj);
+
+          insertedObj.__p = parentObj.__id;
+          this._cmd(a, parentObj, insertedObj);
+
+          this._moveCmdListToParent(insertedObj);
+
+          // Saving the write to root document
+          if (!isRemote) {
+            this.writeCommand(a);
+          }
+
+          return true;
         };
 
         /**
@@ -704,26 +639,35 @@
 
           var parentObj = this._find(a[4]),
               removedItem = this._find(a[2]),
-              prop = "*",
-              index = parentObj.data.indexOf(removedItem); // might check if valid...
+              oldPosition = parseInt(a[1]),
+              prop = "*";
 
-          // Moving the object in the array
-          if (parentObj && removedItem) {
+          if (!parentObj || !removedItem) return false;
 
-            // now the object is in the array...
-            parentObj.data.splice(index, 1);
+          // NOTE: deny inserting object which already has been inserted
+          if (!removedItem.__p) return false;
 
-            // Adding extra information to the object about it's removal
-            removedItem.__removedAt = index;
-
-            this._cmd(a, parentObj, removedItem);
-            removedItem.__p = null; // must be set to null...
-
-            // Saving the write to root document
-            if (!isRemote) {
-              this.writeCommand(a);
-            }
+          var index = parentObj.data.indexOf(removedItem); // might check if valid...
+          if (isNaN(oldPosition)) return false;
+          if (oldPosition != index) {
+            return false;
           }
+
+          // now the object is in the array...
+          parentObj.data.splice(index, 1);
+
+          // removed at should not be necessary because journal has the data
+          // removedItem.__removedAt = index;
+
+          this._cmd(a, parentObj, removedItem);
+          removedItem.__p = null; // must be set to null...
+
+          // Saving the write to root document
+          if (!isRemote) {
+            this.writeCommand(a);
+          }
+
+          return true;
         };
 
         /**
@@ -734,9 +678,14 @@
           var obj = this._find(a[4]),
               prop = a[1];
 
+          if (!prop) return false;
+
+          if (prop == "data") return false;
+          if (prop == "__id") return false;
+
           if (obj) {
 
-            if (obj[prop] == a[2]) return;
+            if (obj[prop] == a[2]) return false;
 
             obj[prop] = a[2]; // value is now set...
             this._cmd(a, obj, null);
@@ -745,6 +694,9 @@
             if (!isRemote) {
               this.writeCommand(a);
             }
+            return true;
+          } else {
+            return false;
           }
         };
 
@@ -756,19 +708,28 @@
           var obj = this._find(a[4]),
               prop = a[1];
 
-          if (obj) {
+          if (!obj || !prop) return false;
 
-            if (obj.data[prop] == a[2]) return;
+          var oldValue = obj.data[prop];
 
-            obj.data[prop] = a[2]; // value is now set...
-            this._cmd(a, obj, null);
+          if (oldValue == a[2]) return false;
 
-            // Saving the write to root document
-            if (!isRemote) {
-              this.writeCommand(a);
-            }
-            this._fireListener(obj, prop);
+          if (typeof oldValue != "undefined") {
+            if (oldValue != a[3]) return false;
+          } else {
+            if (this.isObject(oldValue) || this.isArray(oldValue)) return false;
           }
+
+          obj.data[prop] = a[2]; // value is now set...
+          this._cmd(a, obj, null);
+
+          // Saving the write to root document
+          if (!isRemote) {
+            this.writeCommand(a);
+          }
+          this._fireListener(obj, prop);
+
+          return true;
         };
 
         /**
@@ -780,8 +741,10 @@
               prop = a[1],
               setObj = this._find(a[2]);
 
-          if (!obj) return;
-          if (!setObj) return;
+          if (!obj || !prop) return false;
+          if (!setObj) return false;
+
+          if (typeof obj.data[prop] != "undefined") return false;
 
           obj.data[prop] = setObj; // value is now set...
           setObj.__p = obj.__id; // The parent relationship
@@ -791,6 +754,7 @@
             this._moveCmdListToParent(setObj);
             this.writeCommand(a);
           }
+          return true;
         };
 
         /**
@@ -801,11 +765,14 @@
           var obj = this._find(a[4]),
               prop = a[1];
 
-          if (obj && prop) {
-            // unsetting a property does not work right now...
-            delete obj.data[prop];
-            if (!isRemote) this.writeCommand(a);
-          }
+          if (!obj || !prop) return false;
+
+          if (!this.isObject(obj.data[prop])) return false;
+
+          delete obj.data[prop];
+          if (!isRemote) this.writeCommand(a);
+
+          return true;
         };
 
         /**
@@ -847,9 +814,7 @@
           var s = conv.runToString(obj.data[prop], newCmds);
           obj.data[prop] = s;
 
-          // The actual command to be run at the "cmd" level...
-
-          // perhaps a problematic reverse... ?
+          // TODO: check that these work, may not be good idea to do both
           this._cmd(tmpCmd);
           this._cmd(tmpCmd2);
         };
@@ -1030,11 +995,18 @@
          */
         _myTrait_.execCmd = function (a, isRemote, isRedo) {
 
-          var c = _cmds[a[0]];
-          if (c) {
-            var rv = c.apply(this, [a, isRemote]);
-            if (!isRedo) this.writeLocalJournal(a);
-            return rv;
+          try {
+            if (!this.isArray(a)) return false;
+            var c = _cmds[a[0]];
+            if (c) {
+              var rv = c.apply(this, [a, isRemote]);
+              if (!isRedo) this.writeLocalJournal(a);
+              return rv;
+            } else {
+              return false;
+            }
+          } catch (e) {
+            return false;
           }
         };
 
@@ -1705,356 +1677,6 @@
       }
     }).call(new Function("return this")());
 
-    // the subclass definition comes around here then
-
-    // The class definition is here...
-    var changeFrame_prototype = function changeFrame_prototype() {
-      // Then create the traits and subclasses for this class here...
-
-      // trait comes here...
-
-      (function (_myTrait_) {
-        var _eventOn;
-        var _commands;
-
-        // Initialize static variables here...
-
-        /**
-         * @param Object c
-         */
-        _myTrait_.addController = function (c) {
-          if (!this._controllers) this._controllers = [];
-
-          if (this._controllers.indexOf(c) >= 0) return;
-
-          this._controllers.push(c);
-        };
-
-        /**
-         * @param float t
-         */
-        _myTrait_.clone = function (t) {
-          return _data(this.serialize());
-        };
-
-        /**
-         * @param float scope
-         * @param float data
-         */
-        _myTrait_.emitValue = function (scope, data) {
-          if (this._processingEmit) return this;
-
-          this._processingEmit = true;
-          // adding controllers to the data...
-          if (this._controllers) {
-            var cnt = 0;
-            for (var i = 0; i < this._controllers.length; i++) {
-              var c = this._controllers[i];
-              if (c[scope]) {
-                c[scope](data);
-                cnt++;
-              }
-            }
-            this._processingEmit = false;
-            if (cnt > 0) return this;
-          }
-          /*
-          if(this._controller) {
-          if(this._controller[scope]) {
-          this._controller[scope](data);
-          return;
-          }
-          }
-          */
-
-          if (this._valueFn && this._valueFn[scope]) {
-            this._valueFn[scope](data);
-          } else {
-            if (this._parent) {
-              if (!this._parent.emitValue) {} else {
-                this._parent.emitValue(scope, data);
-              }
-            }
-          }
-          this._processingEmit = false;
-        };
-
-        /**
-         * @param float t
-         */
-        _myTrait_.guid = function (t) {
-
-          return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-          //return Math.random();
-          // return Math.random().toString(36);
-
-          /*    
-          return Math.random().toString(36).substring(2, 15) +
-          Math.random().toString(36).substring(2, 15);
-          */
-          /*        
-          function s4() {
-          return Math.floor((1 + Math.random()) * 0x10000)
-               .toString(16)
-               .substring(1);
-          }
-          return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-          s4() + '-' + s4() + s4() + s4();*/
-        };
-
-        if (_myTrait_.__traitInit && !_myTrait_.hasOwnProperty("__traitInit")) _myTrait_.__traitInit = _myTrait_.__traitInit.slice();
-        if (!_myTrait_.__traitInit) _myTrait_.__traitInit = [];
-        _myTrait_.__traitInit.push(function (data, options, notUsed, notUsed2) {});
-
-        /**
-         * @param float t
-         */
-        _myTrait_.isArray = function (t) {
-
-          if (typeof t == "undefined") return this.__isA;
-
-          return Object.prototype.toString.call(t) === "[object Array]";
-        };
-
-        /**
-         * @param float fn
-         */
-        _myTrait_.isFunction = function (fn) {
-          return Object.prototype.toString.call(fn) == "[object Function]";
-        };
-
-        /**
-         * @param float t
-         */
-        _myTrait_.isObject = function (t) {
-
-          if (typeof t == "undefined") return this.__isO;
-
-          return t === Object(t);
-        };
-      })(this);
-
-      (function (_myTrait_) {
-
-        // Initialize static variables here...
-
-        /**
-         * @param Object changeData
-         */
-        _myTrait_.doesConflict = function (changeData) {
-
-          /*
-          {
-          from : 20
-          to : 40,
-          changes : [
-          [4, "x", 50, 30, guid],
-          [4, "y", 50, 30, guid]
-          ]    
-          }
-          */
-
-          var res = {
-            error: false
-          };
-
-          var currLine = this._channel.getJournalLine();
-
-          // if we are just appending the data to the end, the change could be ok
-          if (currLine == changeData.from) {
-
-            // should be ready to be run, the actual run of the changeFrame or "transaction"
-            // can still be discarding the change packet
-            res.ok = true;
-            return res;
-          } else {
-
-            if (currLine < changeData.from) {
-              res.error = true;
-              res.reason = "the journals are out of sync";
-              return res;
-            } else {}
-          }
-        };
-
-        if (_myTrait_.__traitInit && !_myTrait_.hasOwnProperty("__traitInit")) _myTrait_.__traitInit = _myTrait_.__traitInit.slice();
-        if (!_myTrait_.__traitInit) _myTrait_.__traitInit = [];
-        _myTrait_.__traitInit.push(function (channelObj) {
-
-          this._channel = channelObj;
-        });
-
-        /**
-         * @param Object changeData
-         */
-        _myTrait_.validityCheck = function (changeData) {
-
-          var me = this;
-          var currLine = this._channel.getJournalLine();
-          var ch = this._channel;
-
-          var validCmds = [];
-
-          var res = {
-            invalidCmds: [],
-            invalidPrevSet: [],
-            valid: validCmds
-          };
-
-          if (!changeData || !this.isArray(changeData.changes)) {
-            return res;
-          }
-          var list = changeData.changes;
-
-          var _setValues = {},
-              _createdObjs = {},
-              _createdArrs = {};
-
-          for (var i = 0; i < list.length; i++) {
-
-            var cmd = list[i];
-
-            if (!this.isArray(cmd)) {
-              res.invalidCmds.push(cmd);
-              continue;
-            }
-
-            var ci = cmd[0];
-
-            if (ci == 1 || ci == 2) {
-              var o = ch._find(cmd[1]);
-              if (!o) {
-                if (ci == 1) _createdObjs[cmd[1]] = true;
-                if (ci == 2) _createdArrs[cmd[1]] = true;
-                validCmds.push(cmd);
-              } else {
-                res.invalidCmds.push(cmd);
-              }
-              continue;
-            }
-            if (ci == 3) {
-              validCmds.push(cmd);
-              // security check, perhaps not done for the channel, is it?
-              continue;
-            }
-            if (ci == 4) {
-              // test if the object really really exists
-              var objId = cmd[4],
-                  prop = cmd[1];
-              if (!prop) {
-                res.invalidCmds.push(cmd);
-                continue;
-              }
-              var o = ch._find(objId);
-              if ((!o || !this.isObject(o.data)) && !_createdObjs[cmd[4]]) {
-                res.invalidCmds.push(cmd);
-                continue;
-              }
-              // then check that the previous value of the object and current are the same
-              if (o.data[prop] != cmd[3]) {
-                if (_setValues[objId] && typeof _setValues[objId][prop] != "undefined" && _setValues[objId][prop] == cmd[3]) {} else {
-                  res.invalidPrevSet.push(cmd);
-                  continue;
-                }
-              }
-              if (!_setValues[objId]) _setValues[objId] = {};
-              _setValues[objId][prop] = cmd[2];
-              validCmds.push(cmd);
-              continue;
-            }
-            if (ci == 5) {
-
-              var objId = cmd[4],
-                  insertId = cmd[2],
-                  prop = cmd[1];
-              if (!prop) {
-                res.invalidCmds.push(cmd);
-                continue;
-              }
-
-              var o1 = ch._find(objId),
-                  o2 = ch._find(insertId);
-              if (!o1 && !_createdObjs[objId] || !o2 && !_createdObjs[insertId]) {
-                res.invalidCmds.push(cmd);
-                continue;
-              }
-              validCmds.push(cmd);
-              continue;
-            }
-            if (ci == 7) {
-
-              var objId = cmd[4],
-                  insertId = cmd[2],
-                  prop = parseInt(cmd[1]);
-              if (isNaN(prop)) {
-                res.invalidCmds.push(cmd);
-                continue;
-              }
-
-              var o1 = ch._find(objId),
-                  o2 = ch._find(insertId);
-              if (!o2 && !_createdObjs[insertId]) {
-                res.invalidCmds.push(cmd);
-                continue;
-              }
-
-              // check that it is array, it is hard to check if the array has room or not
-              if (!o1 || !this.isArray(o1.data)) {
-                res.invalidCmds.push(cmd);
-                continue;
-              }
-              validCmds.push(cmd);
-
-              continue;
-            }
-          }
-        };
-      })(this);
-    };
-
-    var changeFrame = function changeFrame(a, b, c, d, e, f, g, h) {
-      var m = this,
-          res;
-      if (m instanceof changeFrame) {
-        var args = [a, b, c, d, e, f, g, h];
-        if (m.__factoryClass) {
-          m.__factoryClass.forEach(function (initF) {
-            res = initF.apply(m, args);
-          });
-          if (typeof res == "function") {
-            if (res._classInfo.name != changeFrame._classInfo.name) return new res(a, b, c, d, e, f, g, h);
-          } else {
-            if (res) return res;
-          }
-        }
-        if (m.__traitInit) {
-          m.__traitInit.forEach(function (initF) {
-            initF.apply(m, args);
-          });
-        } else {
-          if (typeof m.init == "function") m.init.apply(m, args);
-        }
-      } else return new changeFrame(a, b, c, d, e, f, g, h);
-    };
-    // inheritance is here
-
-    changeFrame._classInfo = {
-      name: "changeFrame"
-    };
-    changeFrame.prototype = new changeFrame_prototype();
-
-    (function () {
-      if (typeof define !== "undefined" && define !== null && define.amd != null) {
-        __amdDefs__["changeFrame"] = changeFrame;
-        this.changeFrame = changeFrame;
-      } else if (typeof module !== "undefined" && module !== null && module.exports != null) {
-        module.exports["changeFrame"] = changeFrame;
-      } else {
-        this.changeFrame = changeFrame;
-      }
-    }).call(new Function("return this")());
-
     (function (_myTrait_) {
 
       // Initialize static variables here...
@@ -2100,12 +1722,3 @@
     define(__amdDefs__);
   }
 }).call(new Function("return this")());
-
-// console.log("Strange... no emit value in ", this._parent);
-
-// console.log("Strange... no emit value in ", this._parent);
-
-// there has been some writes to the journal which may conflict with
-// new changes
-
-// the old value and set value are ok.

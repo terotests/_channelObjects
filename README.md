@@ -369,8 +369,6 @@ dataTest.createWorker("set_input",                        // worker ID
     
     
     
-    
-    
 
 
    
@@ -425,9 +423,6 @@ dataTest.createWorker("set_input",                        // worker ID
     
 ##### trait _dataTrait
 
-- [addController](README.md#_dataTrait_addController)
-- [clone](README.md#_dataTrait_clone)
-- [emitValue](README.md#_dataTrait_emitValue)
 - [guid](README.md#_dataTrait_guid)
 - [isArray](README.md#_dataTrait_isArray)
 - [isFunction](README.md#_dataTrait_isFunction)
@@ -485,41 +480,6 @@ dataTest.createWorker("set_input",                        // worker ID
 
       
     
-      
-            
-#### Class changeFrame
-
-
-- [doesConflict](README.md#changeFrame_doesConflict)
-- [validityCheck](README.md#changeFrame_validityCheck)
-
-
-
-   
-    
-##### trait _dataTrait
-
-- [addController](README.md#_dataTrait_addController)
-- [clone](README.md#_dataTrait_clone)
-- [emitValue](README.md#_dataTrait_emitValue)
-- [guid](README.md#_dataTrait_guid)
-- [isArray](README.md#_dataTrait_isArray)
-- [isFunction](README.md#_dataTrait_isFunction)
-- [isObject](README.md#_dataTrait_isObject)
-
-
-    
-    
-
-
-   
-      
-    
-
-
-
-      
-    
 
 
 
@@ -541,8 +501,6 @@ The class has following internal singleton variables:
 
 
    
-    
-    
     
     
     
@@ -1470,108 +1428,20 @@ The class has following internal singleton variables:
 * _commands
         
         
-### <a name="_dataTrait_addController"></a>_dataTrait::addController(c)
-
-
-```javascript
-if(!this._controllers)
-    this._controllers = [];
-    
-if(this._controllers.indexOf(c)>=0) return;
-
-this._controllers.push(c);
-```
-
-### <a name="_dataTrait_clone"></a>_dataTrait::clone(t)
-
-
-```javascript
-return _data(this.serialize());
-```
-
-### <a name="_dataTrait_emitValue"></a>_dataTrait::emitValue(scope, data)
-
-
-```javascript
-if(this._processingEmit) return this;
-
-this._processingEmit = true;
-// adding controllers to the data...
-if(this._controllers) {
-    var cnt = 0;
-    for(var i=0; i<this._controllers.length; i++) {
-        var c = this._controllers[i];
-        if(c[scope]) {
-           c[scope](data);
-           cnt++;
-        }
-    }
-    this._processingEmit = false;
-    if(cnt>0) return this;
-}
-/*
-if(this._controller) {
-    if(this._controller[scope]) {
-       this._controller[scope](data);
-       return;
-    }
-}
-*/
-
-if(this._valueFn && this._valueFn[scope]) {
-    this._valueFn[scope](data);
-} else {
-    if(this._parent) {
-        if(!this._parent.emitValue) {
-            // console.log("Strange... no emit value in ", this._parent);
-        } else {
-            this._parent.emitValue(scope,data);
-        }
-    }
-}
-this._processingEmit = false;
-```
-
 ### <a name="_dataTrait_guid"></a>_dataTrait::guid(t)
 
 
 ```javascript
-
 return Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15);
-        
-//return Math.random();
-// return Math.random().toString(36);
-        
-/*    
-return Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-*/
-/*        
-function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-               .toString(16)
-               .substring(1);
-  }
-
-return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-       s4() + '-' + s4() + s4() + s4();*/
-```
-
-### _dataTrait::constructor( data, options, notUsed, notUsed2 )
-
-```javascript
 
 ```
-        
+
 ### <a name="_dataTrait_isArray"></a>_dataTrait::isArray(t)
 
 
 ```javascript
-
-if(typeof(t)=="undefined") return this.__isA;
-
-return Object.prototype.toString.call( t ) === '[object Array]';
+return t instanceof Array;
 ```
 
 ### <a name="_dataTrait_isFunction"></a>_dataTrait::isFunction(fn)
@@ -1585,9 +1455,6 @@ return Object.prototype.toString.call(fn) == '[object Function]';
 
 
 ```javascript
-
-if(typeof(t)=="undefined") return this.__isO;
-
 return t === Object(t);
 ```
 
@@ -1616,6 +1483,9 @@ The class has following internal singleton variables:
 ```javascript
 var obj = this._find( a[4] ),
     prop = a[1];
+    
+if(!obj || !prop) return false;
+if(typeof( obj.data[prop] )  != "string" ) return false;
 
 var conv = aceCmdConvert();
 obj.data[prop] = conv.runToString( obj.data[prop], a[2]);
@@ -1632,30 +1502,47 @@ if(!isRemote) {
 }
 _doingRemote = false;
 this._fireListener(obj, prop);
+
+return true;
+
 ```
 
 ### <a name="commad_trait__cmd_createArray"></a>commad_trait::_cmd_createArray(a, isRemote)
 
 
 ```javascript
-var newObj = { data : [], __id : a[1] }
+var objId = a[1];
+if(!objId) return false;
+
 var hash = this._getObjectHash();
+if(hash[objId]) return false;
+
+var newObj = { data : [], __id : objId };
 hash[newObj.__id] = newObj;
-if(!(isRemote )) {
+
+if(!(isRemote)) {
     this.writeCommand(a, newObj);
 } 
+return true;
 ```
 
 ### <a name="commad_trait__cmd_createObject"></a>commad_trait::_cmd_createObject(a, isRemote)
 
 
 ```javascript
-var newObj = { data : {}, __id : a[1] }
+var objId = a[1];
+if(!objId) return false;
+
 var hash = this._getObjectHash();
+if(hash[objId]) return false;
+
+var newObj = { data : {}, __id : objId };
 hash[newObj.__id] = newObj;
+
 if(!(isRemote)) {
     this.writeCommand(a, newObj);
 } 
+return true;
 ```
 
 ### <a name="commad_trait__cmd_moveToIndex"></a>commad_trait::_cmd_moveToIndex(a, isRemote)
@@ -1668,6 +1555,8 @@ var obj = this._find( a[4] ),
     targetObj,
     i = 0;
 
+if(!obj) return false;
+
 var oldIndex = null;
 
 for(i=0; i< len; i++) {
@@ -1679,9 +1568,8 @@ for(i=0; i< len; i++) {
     }
 }
 
-if(oldIndex != a[3]) {
-    throw "moveToIndex with invalid old index value";
-    return;
+if(oldIndex != a[3]  ||!targetObj  ) {
+    return false;
 }
 
 // Questions here:
@@ -1693,20 +1581,24 @@ if(oldIndex != a[3]) {
 //  - where is the writeCommand?
 // 
 // Moving the object in the array
-if(targetObj) {
-    var targetIndex = parseInt(a[2]);
 
-    _execInfo.fromIndex = i;
-    
-    obj.data.splice(i, 1);
-    obj.data.splice(targetIndex, 0, targetObj);
-    this._cmd(a, obj, targetObj);
-    
-    if(!(isRemote || _isRemoteUpdate)) {
-        this.writeCommand(a);
-    }           
-    
-}
+var targetIndex = parseInt(a[2]);
+if(isNaN(targetIndex)) return false;
+
+if(obj.data.length <= i) return false;
+
+_execInfo.fromIndex = i;
+
+obj.data.splice(i, 1);
+obj.data.splice(targetIndex, 0, targetObj);
+this._cmd(a, obj, targetObj);
+
+if(!(isRemote || _isRemoteUpdate)) {
+    this.writeCommand(a);
+}           
+return true;
+
+
 ```
 
 ### <a name="commad_trait__cmd_pushToArray"></a>commad_trait::_cmd_pushToArray(a, isRemote)
@@ -1714,37 +1606,37 @@ if(targetObj) {
 
 ```javascript
 
-// old position
-// [ "parentId", "index"]
-
 var parentObj = this._find( a[4] ),
     insertedObj = this._find( a[2] ),
-    toIndex = a[1],
+    toIndex = parseInt( a[1] ),
     oldPos  = a[3],  // old position can also be "null"
     prop = "*",
     index = parentObj.data.length; // might check if valid...
 
-// Moving the object in the array
-if( parentObj && insertedObj) {
-    
-    // Do not isert the item into the array 2 times, test for that error
-    if(!insertedObj.__p || ( insertedObj.__p != parentObj.__id) ) {
-    
-        // now the object is in the array...
-        
-        parentObj.data.splice( toIndex, 0, insertedObj );
-        
-        insertedObj.__p = parentObj.__id;
-        this._cmd(a, parentObj, insertedObj);
 
-        this._moveCmdListToParent(insertedObj);
-        
-        // Saving the write to root document
-        if(!isRemote) {
-            this.writeCommand(a);
-        }  
-    }
+if(!parentObj || !insertedObj) return false;
+
+// NOTE: deny inserting object which already has been inserted
+if(insertedObj.__p) return false;
+if(isNaN(toIndex)) return false;
+if(!this.isArray( parentObj.data )) return;
+if( toIndex > parentObj.data.length ) {
+    return false;
 }
+
+parentObj.data.splice( toIndex, 0, insertedObj );
+
+insertedObj.__p = parentObj.__id;
+this._cmd(a, parentObj, insertedObj);
+
+this._moveCmdListToParent(insertedObj);
+
+// Saving the write to root document
+if(!isRemote) {
+    this.writeCommand(a);
+}  
+
+return true;
 ```
 
 ### <a name="commad_trait__cmd_removeObject"></a>commad_trait::_cmd_removeObject(a, isRemote)
@@ -1754,27 +1646,37 @@ if( parentObj && insertedObj) {
 
 var parentObj = this._find( a[4] ),
     removedItem = this._find( a[2] ),
-    prop = "*",
-    index = parentObj.data.indexOf( removedItem ); // might check if valid...
+    oldPosition = parseInt( a[1] ),
+    prop = "*";
+    
 
-// Moving the object in the array
-if( parentObj && removedItem) {
+if(!parentObj || !removedItem) return false;
 
-    // now the object is in the array...
-    parentObj.data.splice( index, 1 );
-    
-    // Adding extra information to the object about it's removal
-    removedItem.__removedAt = index;
-    
-    this._cmd(a, parentObj, removedItem);
-    removedItem.__p = null; // must be set to null...
-    
-    // Saving the write to root document
-    if(!isRemote) {
-        this.writeCommand(a);
-    }        
-    
+// NOTE: deny inserting object which already has been inserted
+if(!removedItem.__p) return false;
+
+var index = parentObj.data.indexOf( removedItem ); // might check if valid...
+if(isNaN(oldPosition)) return false;
+if( oldPosition  != index ) {
+    return false;
 }
+
+// now the object is in the array...
+parentObj.data.splice( index, 1 );
+
+// removed at should not be necessary because journal has the data
+// removedItem.__removedAt = index;
+
+this._cmd(a, parentObj, removedItem);
+removedItem.__p = null; // must be set to null...
+
+// Saving the write to root document
+if(!isRemote) {
+    this.writeCommand(a);
+}        
+
+return true;
+
 ```
 
 ### <a name="commad_trait__cmd_setMeta"></a>commad_trait::_cmd_setMeta(a, isRemote)
@@ -1784,9 +1686,14 @@ if( parentObj && removedItem) {
 var obj = this._find( a[4] ),
     prop = a[1];
 
+if(!prop) return false;
+
+if(prop == "data") return false;
+if(prop == "__id") return false;
+
 if(obj) {
     
-    if( obj[prop] == a[2] ) return;
+    if( obj[prop] == a[2] ) return false;
 
     obj[prop] = a[2]; // value is now set...
     this._cmd(a, obj, null);
@@ -1795,6 +1702,9 @@ if(obj) {
     if(!isRemote) {
         this.writeCommand(a);
     } 
+    return true;
+} else {
+    return false;
 }
 ```
 
@@ -1805,20 +1715,29 @@ if(obj) {
 var obj = this._find( a[4] ),
     prop = a[1];
 
-if(obj) {
-    
-    if( obj.data[prop] == a[2] ) return;
+if(!obj || !prop) return false;
 
-    obj.data[prop] = a[2]; // value is now set...
-    this._cmd(a, obj, null);
-    
-    // Saving the write to root document
-    if(!isRemote) {
-        this.writeCommand(a);
-    } 
-    this._fireListener(obj, prop);
+var oldValue = obj.data[prop];
 
+if( oldValue == a[2] ) return false;
+
+if(typeof( oldValue ) != "undefined") {
+    if( oldValue != a[3] ) return false;
+} else {
+    if( this.isObject(oldValue) || this.isArray(oldValue) ) return false;
 }
+
+obj.data[prop] = a[2]; // value is now set...
+this._cmd(a, obj, null);
+
+// Saving the write to root document
+if(!isRemote) {
+    this.writeCommand(a);
+} 
+this._fireListener(obj, prop);
+
+return true;
+
 ```
 
 ### <a name="commad_trait__cmd_setPropertyObject"></a>commad_trait::_cmd_setPropertyObject(a, isRemote)
@@ -1829,8 +1748,10 @@ var obj = this._find( a[4] ),
     prop = a[1],
     setObj = this._find( a[2] );
 
-if(!obj) return;
-if(!setObj) return;        
+if(!obj || !prop)   return false;
+if(!setObj)         return false; 
+
+if(typeof( obj.data[prop]) != "undefined" )  return false;
 
 obj.data[prop] = setObj; // value is now set...
 setObj.__p = obj.__id; // The parent relationship
@@ -1840,6 +1761,7 @@ if(!isRemote) {
     this._moveCmdListToParent(setObj);
     this.writeCommand(a);
 } 
+return true;
 ```
 
 ### <a name="commad_trait__cmd_unsetProperty"></a>commad_trait::_cmd_unsetProperty(a, isRemote)
@@ -1848,13 +1770,16 @@ if(!isRemote) {
 ```javascript
 var obj = this._find( a[4] ),
     prop = a[1];
+    
+if(!obj || !prop) return false;
 
-if(obj && prop) {
-    // unsetting a property does not work right now...
-    delete obj.data[prop];
-    if(!isRemote) this.writeCommand(a);
-}         
+if(!this.isObject( obj.data[prop] ) ) return false;
 
+delete obj.data[prop];
+if(!isRemote) this.writeCommand(a);
+         
+
+return true;
        
 ```
 
@@ -1899,10 +1824,7 @@ var tmpCmd2 = [13, prop, newCmds, null, a[4] ];
 var s = conv.runToString( obj.data[prop], newCmds );
 obj.data[prop] = s;
 
-// The actual command to be run at the "cmd" level...
-
-
-// perhaps a problematic reverse... ?
+// TODO: check that these work, may not be good idea to do both
 this._cmd(tmpCmd);      
 this._cmd(tmpCmd2);
 
@@ -2088,11 +2010,18 @@ if(obj && prop && removedObj) {
 
 ```javascript
 
-var c = _cmds[a[0]];
-if(c) {
-    var rv =  c.apply(this, [a, isRemote]);
-    if(!isRedo) this.writeLocalJournal( a );
-    return rv;
+try {
+    if(!this.isArray(a)) return false;
+    var c = _cmds[a[0]];
+    if(c) {
+        var rv =  c.apply(this, [a, isRemote]);
+        if(!isRedo) this.writeLocalJournal( a );
+        return rv;
+    } else {
+        return false;
+    }
+} catch(e) {
+    return false;
 }
 ```
 
@@ -2239,346 +2168,6 @@ if(this._journal) {
    
       
     
-      
-    
-
-
-
-      
-    
-      
-            
-# Class changeFrame
-
-
-The class has following internal singleton variables:
-        
-        
-### <a name="changeFrame_doesConflict"></a>changeFrame::doesConflict(changeData)
-
-
-```javascript
-
-/*
-{
-    from : 20
-    to : 40,
-    changes : [
-       [4, "x", 50, 30, guid],
-       [4, "y", 50, 30, guid]
-    ]    
-}
-*/
-
-var res = {
-    error : false
-};
-
-var currLine = this._channel.getJournalLine();
-
-// if we are just appending the data to the end, the change could be ok
-if(currLine == changeData.from) {
-    
-    // should be ready to be run, the actual run of the changeFrame or "transaction"
-    // can still be discarding the change packet
-    res.ok = true;
-    return res;
-    
-} else {
-    
-    if(currLine < changeData.from) {
-        res.error = true;
-        res.reason = "the journals are out of sync";
-        return res;
-    } else {
-        
-        // there has been some writes to the journal which may conflict with
-        // new changes
-        
-    }
-}
-```
-
-### changeFrame::constructor( channelObj )
-
-```javascript
-
-this._channel = channelObj;
-```
-        
-### <a name="changeFrame_validityCheck"></a>changeFrame::validityCheck(changeData)
-
-
-```javascript
-
-var me = this;
-var currLine = this._channel.getJournalLine();
-var ch = this._channel;
-
-var validCmds = [];
-
-var res = {
-    invalidCmds : [],
-    invalidPrevSet  : [],
-    valid : validCmds
-};
-
-if(!changeData || !(this.isArray(changeData.changes))) {
-    return res;
-}
-var list = changeData.changes;
-
-var _setValues = {},
-    _createdObjs = {},
-    _createdArrs = {};
-
-for(var i=0; i<list.length; i++) {
-    
-    var cmd = list[i];
-    
-    if(!this.isArray(cmd)) {
-        res.invalidCmds.push(cmd);
-        continue;
-    }
-    
-    var ci = cmd[0];
-    
-    if(ci==1 || ci==2 ) {
-        var o = ch._find(cmd[1]);     
-        if(!o) {
-            if(ci==1) _createdObjs[cmd[1]] = true;
-            if(ci==2) _createdArrs[cmd[1]] = true;
-            validCmds.push(cmd);
-        } else {
-            res.invalidCmds.push(cmd);
-        }
-        continue;
-    }
-    if( ci==3 ) {
-        validCmds.push(cmd);
-        // security check, perhaps not done for the channel, is it?
-        continue;
-    }
-    if( ci==4 ) {
-        // test if the object really really exists
-        var objId = cmd[4],
-            prop = cmd[1];
-        if(!prop) {
-            res.invalidCmds.push(cmd);
-            continue;            
-        }    
-        var o = ch._find(objId);
-        if( ( !o || !this.isObject(o.data) ) && !_createdObjs[cmd[4]]) {
-            res.invalidCmds.push(cmd);
-            continue;
-        }
-        // then check that the previous value of the object and current are the same
-        if( o.data[prop] != cmd[3]) {
-            if( _setValues[objId] && 
-                ( typeof( _setValues[objId][prop] ) != "undefined") && 
-                _setValues[objId][prop] == cmd[3]) {
-                // the old value and set value are ok.   
-            } else {
-                res.invalidPrevSet.push(cmd);
-                continue;       
-            }
-        }
-        if(!_setValues[objId]) _setValues[objId] = {};
-        _setValues[objId][prop] = cmd[2];
-        validCmds.push(cmd);
-        continue;
-    }    
-    if( ci==5 ) {
-
-        var objId = cmd[4],
-            insertId = cmd[2],
-            prop = cmd[1];
-        if(!prop) {
-            res.invalidCmds.push(cmd);
-            continue;            
-        }    
-
-        var o1 = ch._find(objId),
-            o2 = ch._find(insertId);
-        if( ( !o1 && !_createdObjs[objId]) || (!o2 && !_createdObjs[insertId]) ) {
-            res.invalidCmds.push(cmd);
-            continue;
-        }        
-        validCmds.push(cmd);
-        continue;        
-        
-    }
-    if( ci== 7 ) {
-
-        var objId = cmd[4],
-            insertId = cmd[2],
-            prop = parseInt( cmd[1] );
-        if(isNaN( prop) ) {
-            res.invalidCmds.push(cmd);
-            continue;            
-        }    
-
-        var o1 = ch._find(objId),
-            o2 = ch._find(insertId);
-        if( ( !o2 && !_createdObjs[insertId])  ) {
-            res.invalidCmds.push(cmd);
-            continue;
-        }        
-        
-        // check that it is array, it is hard to check if the array has room or not
-        if(!o1 || !this.isArray(o1.data) ) {
-            res.invalidCmds.push(cmd);
-            continue;            
-        }
-        validCmds.push(cmd);
-
-        continue; 
-    }
-}
-
-
-```
-
-
-
-   
-    
-## trait _dataTrait
-
-The class has following internal singleton variables:
-        
-* _eventOn
-        
-* _commands
-        
-        
-### <a name="_dataTrait_addController"></a>_dataTrait::addController(c)
-
-
-```javascript
-if(!this._controllers)
-    this._controllers = [];
-    
-if(this._controllers.indexOf(c)>=0) return;
-
-this._controllers.push(c);
-```
-
-### <a name="_dataTrait_clone"></a>_dataTrait::clone(t)
-
-
-```javascript
-return _data(this.serialize());
-```
-
-### <a name="_dataTrait_emitValue"></a>_dataTrait::emitValue(scope, data)
-
-
-```javascript
-if(this._processingEmit) return this;
-
-this._processingEmit = true;
-// adding controllers to the data...
-if(this._controllers) {
-    var cnt = 0;
-    for(var i=0; i<this._controllers.length; i++) {
-        var c = this._controllers[i];
-        if(c[scope]) {
-           c[scope](data);
-           cnt++;
-        }
-    }
-    this._processingEmit = false;
-    if(cnt>0) return this;
-}
-/*
-if(this._controller) {
-    if(this._controller[scope]) {
-       this._controller[scope](data);
-       return;
-    }
-}
-*/
-
-if(this._valueFn && this._valueFn[scope]) {
-    this._valueFn[scope](data);
-} else {
-    if(this._parent) {
-        if(!this._parent.emitValue) {
-            // console.log("Strange... no emit value in ", this._parent);
-        } else {
-            this._parent.emitValue(scope,data);
-        }
-    }
-}
-this._processingEmit = false;
-```
-
-### <a name="_dataTrait_guid"></a>_dataTrait::guid(t)
-
-
-```javascript
-
-return Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-        
-//return Math.random();
-// return Math.random().toString(36);
-        
-/*    
-return Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-*/
-/*        
-function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-               .toString(16)
-               .substring(1);
-  }
-
-return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-       s4() + '-' + s4() + s4() + s4();*/
-```
-
-### _dataTrait::constructor( data, options, notUsed, notUsed2 )
-
-```javascript
-
-```
-        
-### <a name="_dataTrait_isArray"></a>_dataTrait::isArray(t)
-
-
-```javascript
-
-if(typeof(t)=="undefined") return this.__isA;
-
-return Object.prototype.toString.call( t ) === '[object Array]';
-```
-
-### <a name="_dataTrait_isFunction"></a>_dataTrait::isFunction(fn)
-
-
-```javascript
-return Object.prototype.toString.call(fn) == '[object Function]';
-```
-
-### <a name="_dataTrait_isObject"></a>_dataTrait::isObject(t)
-
-
-```javascript
-
-if(typeof(t)=="undefined") return this.__isO;
-
-return t === Object(t);
-```
-
-
-    
-    
-
-
-   
       
     
 
