@@ -68,15 +68,15 @@ is
 Creating actions as commands gives also the benefit of the command history thus creates history ready to be used for undo / redo actions.
 
 
-# Actions 
+# Commands 
 
-Action is intent to change the value of the object into something else. Action data looks like this:
+Command is intent to change the value of the object into something else. Command data looks like this:
 
 ```javascript
 [4, "x", 120, 100, "m6cq0z12pckp4zb5psbvfvlp4l"]
 ```
 
-The `4` represents the action code for "setProperty". Currently supported actions are:
+The `4` represents the action code for "setProperty". Currently supported commands are:
 
 ( copied from the actual source code )
 
@@ -91,6 +91,31 @@ The `4` represents the action code for "setProperty". Currently supported action
     _cmds[12] = this._cmd_moveToIndex;
     _cmds[13] = this._cmd_aceCmd;
 ```
+
+## Executing a command
+
+To run a command
+
+ 1. get a reference to _channelData -object
+ 2. run `execCmd` to the object with the array filled with command
+ 3. check from the return values if the command was succesfull
+ 
+Here is an example of command -run. This command will be success, because the previous value of the "x" is set correctly
+
+```javascript
+var dataTest = _channelData( "channel1", { data : { x : 100 }, __id : "myguid" }, [] );
+if( dataTest.execCmd([4, "x", 120, 100, "myguid"]) ) {
+   // The command was succesfull
+} else {
+   // The command failed
+}
+```
+
+
+## Reversing a command 
+
+
+# List of Commands
 
 ## Create Object 
 
