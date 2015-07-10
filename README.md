@@ -1459,10 +1459,6 @@ this._cmdBuffer.push(a);
 
 The class has following internal singleton variables:
         
-* _eventOn
-        
-* _commands
-        
         
 ### <a name="_dataTrait_guid"></a>_dataTrait::guid(t)
 
