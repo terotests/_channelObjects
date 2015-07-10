@@ -257,7 +257,7 @@ dataTest.toPlainData();     // returns data as regular JavaScript object with no
 
 # Reversing Actions 
 
-Testing reverse with workers demo : http://jsfiddle.net/a8qngujk/
+Testing reverse with workers demo : http://jsfiddle.net/dcvo269d/
 
 Actions in the journal must be reversable. This means that each command should have enought information to reverse the operation it has created.
 
