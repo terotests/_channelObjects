@@ -114,6 +114,16 @@ if( dataTest.execCmd([4, "x", 120, 100, "myguid"]) ) {
 
 ## Reversing a command 
 
+Immediately after the command was successfully run you can call
+
+```javascript
+dataTest.undo(); // reverses the last succesfull command
+```
+
+If you know the last command, you can run 
+```javascript
+dataTest.reverseCmd([4, "x", 120, 100, "myguid"]) 
+```
 
 # List of Commands
 
