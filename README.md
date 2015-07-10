@@ -315,7 +315,7 @@ The workers will receive commands which create the opposite action to created ac
 
 A demo of workers
 
-http://jsfiddle.net/mj8c3p5k/3/
+http://jsfiddle.net/dcvo269d/
 
 The workers are created to save memory and organize all the functions which are modifying the Object data in a single place.
 
