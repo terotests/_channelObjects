@@ -1125,7 +1125,10 @@
          */
         _myTrait_.undo = function (n) {
 
-          this.reverseNLines(n || 1);
+          if (n === 0) return;
+          if (typeof n == "undefined") n = 1;
+
+          this.reverseNLines(n);
         };
 
         /**
