@@ -1081,6 +1081,7 @@
          * @param float a
          */
         _myTrait_.reverseCmd = function (a) {
+          console.log("reversing command ", a);
           var c = _reverseCmds[a[0]];
           if (c) {
             var rv = c.apply(this, [a]);
