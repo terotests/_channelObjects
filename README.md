@@ -1625,7 +1625,7 @@ obj.data.splice(i, 1);
 obj.data.splice(targetIndex, 0, targetObj);
 this._cmd(a, obj, targetObj);
 
-if(!(isRemote || _isRemoteUpdate)) {
+if(!(isRemote)) {
     this.writeCommand(a);
 }           
 return true;
@@ -2131,6 +2131,7 @@ while( (n--) > 0 ) {
 
 This function reverses a given command. There may be cases when the command parameters make the command itself non-reversable. It is the responsibility of the framework to make sure all commands remain reversable.
 ```javascript
+console.log("reversing command ", a);
 var c = _reverseCmds[a[0]];
 if(c) {
     var rv =  c.apply(this, [a]);
@@ -2173,7 +2174,10 @@ while( ( line - 1 )  >= 0 &&  line > ( index  ) ) {
 
 ```javascript
 
-this.reverseNLines( n || 1);
+if(n===0) return;
+if(typeof(n)=="undefined") n = 1;
+
+this.reverseNLines( n );
 
 ```
 

@@ -584,7 +584,7 @@
           obj.data.splice(targetIndex, 0, targetObj);
           this._cmd(a, obj, targetObj);
 
-          if (!(isRemote || _isRemoteUpdate)) {
+          if (!isRemote) {
             this.writeCommand(a);
           }
           return true;
