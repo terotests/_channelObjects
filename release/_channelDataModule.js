@@ -506,6 +506,9 @@
           };
           hash[newObj.__id] = newObj;
 
+          // it is orphan object...
+          this._data.__orphan.push(newObj);
+
           if (!isRemote) {
             this.writeCommand(a, newObj);
           }
@@ -528,6 +531,11 @@
             __id: objId
           };
           hash[newObj.__id] = newObj;
+
+          // it is orphan object...
+          this._data.__orphan.push(newObj);
+
+          // --- adding to the data object...
 
           if (!isRemote) {
             this.writeCommand(a, newObj);
@@ -619,6 +627,12 @@
           insertedObj.__p = parentObj.__id;
           this._cmd(a, parentObj, insertedObj);
 
+          // remove from orphans
+          var ii = this._data.__orphan.indexOf(insertedObj);
+          if (ii >= 0) {
+            this._data.__orphan.splice(ii, 1);
+          }
+
           this._moveCmdListToParent(insertedObj);
 
           // Saving the write to root document
@@ -659,6 +673,12 @@
 
           this._cmd(a, parentObj, removedItem);
           removedItem.__p = null; // must be set to null...
+
+          // remove from orphans
+          var ii = this._data.__orphan.indexOf(removedItem);
+          if (ii < 0) {
+            this._data.__orphan.push(removedItem);
+          }
 
           // Saving the write to root document
           if (!isRemote) {
@@ -823,7 +843,16 @@
         _myTrait_._reverse_createObject = function (a) {
           var objId = a[1];
           var hash = this._getObjectHash();
+
+          var o = hash[objId];
+
           delete hash[objId];
+
+          var ii = this._data.__orphan.indexOf(o);
+
+          if (ii >= 0) {
+            this._data.__orphan.splice(ii, 1);
+          }
         };
 
         /**
@@ -916,6 +945,12 @@
 
             var tmpCmd = [7, oldPosition, a[2], null, a[4]];
             this._cmd(tmpCmd);
+
+            // remove from orphans
+            var ii = this._data.__orphan.indexOf(removedItem);
+            if (ii >= 0) {
+              this._data.__orphan.splice(ii, 1);
+            }
 
             removedItem.__p = a[4];
           }
@@ -1046,6 +1081,7 @@
             _cmds[12] = this._cmd_moveToIndex;
             _cmds[13] = this._cmd_aceCmd;
 
+            _reverseCmds[1] = this._reverse_createObject;
             _reverseCmds[3] = this._reverse_setMeta;
             _reverseCmds[4] = this._reverse_setProperty;
             _reverseCmds[5] = this._reverse_setPropertyObject;
@@ -1567,6 +1603,9 @@
           var me = this;
           this._channelId = channelId;
           this._data = mainData;
+          if (!this._data.__orphan) {
+            this._data.__orphan = [];
+          }
           this._workers = {};
           this._journal = journalCmds || [];
           this._journalPointer = this._journal.length;
