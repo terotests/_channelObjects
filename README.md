@@ -1,5 +1,7 @@
 # Data command runner
 
+`The Channel data has no knowledge of the network, it only assembles the data from the commands. However, it provides mechanisms for undo/redo and data streaming over network.`
+
 The first run-down of the command runner. When sending arbitary object data over network in socket.io channels the journal data must be deconstructed into journal commands which are sent over the channel to the receivers. 
 
 The main file and journal are ment to be used together with (Channels)[https://github.com/terotests/_channels] which make possible forking the data into separate branches.
