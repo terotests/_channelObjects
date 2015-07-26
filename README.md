@@ -1677,7 +1677,7 @@ if(!parentObj || !insertedObj) return false;
 if(insertedObj.__p) return false;
 if(isNaN(toIndex)) return false;
 if(!this.isArray( parentObj.data )) return;
-if( toIndex >= parentObj.data.length ) {
+if( toIndex > parentObj.data.length ) {
     return false;
 }
 
