@@ -1816,6 +1816,13 @@ obj.data[prop] = setObj; // value is now set...
 setObj.__p = obj.__id; // The parent relationship
 this._cmd(a, obj, setObj);
 
+var ii = this._data.__orphan.indexOf(setObj);
+if(ii>=0) {
+    this._data.__orphan.splice(ii,1);
+}
+
+
+
 if(!isRemote) {
     this._moveCmdListToParent(setObj);
     this.writeCommand(a);
