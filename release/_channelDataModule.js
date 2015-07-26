@@ -590,7 +590,7 @@
 
           obj.data.splice(i, 1);
           obj.data.splice(targetIndex, 0, targetObj);
-          this._cmd(a, obj, targetObj);
+          this._cmd(a, null, a[1]);
 
           if (!isRemote) {
             this.writeCommand(a);
@@ -625,7 +625,8 @@
           parentObj.data.splice(toIndex, 0, insertedObj);
 
           insertedObj.__p = parentObj.__id;
-          this._cmd(a, parentObj, insertedObj);
+
+          this._cmd(a, null, a[2]);
 
           // remove from orphans
           var ii = this._data.__orphan.indexOf(insertedObj);
@@ -671,7 +672,8 @@
           // removed at should not be necessary because journal has the data
           // removedItem.__removedAt = index;
 
-          this._cmd(a, parentObj, removedItem);
+          this._cmd(a, null, a[2]);
+
           removedItem.__p = null; // must be set to null...
 
           // remove from orphans
@@ -766,7 +768,8 @@
 
           obj.data[prop] = setObj; // value is now set...
           setObj.__p = obj.__id; // The parent relationship
-          this._cmd(a, obj, setObj);
+
+          this._cmd(a, null, a[2]);
 
           var ii = this._data.__orphan.indexOf(setObj);
           if (ii >= 0) {
@@ -897,7 +900,7 @@
             tmpCmd[2] = targetIndex;
             tmpCmd[3] = a[2];
 
-            this._cmd(tmpCmd);
+            this._cmd(tmpCmd, null, tmpCmd[1]);
           }
         };
 
@@ -926,7 +929,7 @@
               // too simple still...
               parentObj.data.splice(shouldBeAt, 1);
 
-              this._cmd(tmpCmd);
+              this._cmd(tmpCmd, null, tmpCmd[2]);
             }
           }
         };
@@ -949,7 +952,8 @@
             parentObj.data.splice(oldPosition, 0, removedItem);
 
             var tmpCmd = [7, oldPosition, a[2], null, a[4]];
-            this._cmd(tmpCmd);
+
+            this._cmd(tmpCmd, null, a[2]);
 
             // remove from orphans
             var ii = this._data.__orphan.indexOf(removedItem);
@@ -1022,7 +1026,7 @@
             removedObj.__p = obj.__id; // The parent relationship
 
             var tmpCmd = [5, prop, removedObj.__id, 0, a[4]];
-            this._cmd(tmpCmd);
+            this._cmd(tmpCmd, null, removedObj.__id);
           }
         };
 
@@ -1217,44 +1221,17 @@
         /**
          * In the future can be used to initiate events, if required.
          * @param float cmd
-         * @param float obj
-         * @param float targetObj
+         * @param String UUID1
+         * @param String UUID2
          */
-        _myTrait_._cmd = function (cmd, obj, targetObj) {
+        _myTrait_._cmd = function (cmd, UUID1, UUID2) {
 
           var cmdIndex = cmd[0],
               UUID = cmd[4];
 
-          if (!this._workers[cmdIndex]) return;
-          if (!this._workers[cmdIndex][UUID]) return;
+          this._wCmd(cmdIndex, UUID, cmd);
 
-          var workers = this._workers[cmdIndex][UUID];
-          var me = this;
-
-          var propFilter = cmd[1];
-          var allProps = workers["*"],
-              thisProp = workers[propFilter];
-
-          if (allProps) {
-            allProps.forEach(function (w) {
-              var id = w[0],
-                  options = w[1];
-              var worker = _workerCmds[id];
-              if (worker) {
-                worker(cmd, options);
-              }
-            });
-          }
-          if (thisProp) {
-            thisProp.forEach(function (w) {
-              var id = w[0],
-                  options = w[1];
-              var worker = _workerCmds[id];
-              if (worker) {
-                worker(cmd, options);
-              }
-            });
-          }
+          if (UUID2 && UUID2 != UUID) this._wCmd(cmdIndex, UUID2, cmd);
         };
 
         /**
@@ -1475,6 +1452,45 @@
             d = this._findObjects(d);
           }
           return d;
+        };
+
+        /**
+         * @param int cmdIndex
+         * @param float UUID
+         * @param float cmd
+         */
+        _myTrait_._wCmd = function (cmdIndex, UUID, cmd) {
+
+          if (!this._workers[cmdIndex]) return;
+          if (!this._workers[cmdIndex][UUID]) return;
+
+          var workers = this._workers[cmdIndex][UUID];
+          var me = this;
+
+          var propFilter = cmd[1];
+          var allProps = workers["*"],
+              thisProp = workers[propFilter];
+
+          if (allProps) {
+            allProps.forEach(function (w) {
+              var id = w[0],
+                  options = w[1];
+              var worker = _workerCmds[id];
+              if (worker) {
+                worker(cmd, options);
+              }
+            });
+          }
+          if (thisProp) {
+            thisProp.forEach(function (w) {
+              var id = w[0],
+                  options = w[1];
+              var worker = _workerCmds[id];
+              if (worker) {
+                worker(cmd, options);
+              }
+            });
+          }
         };
 
         /**

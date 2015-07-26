@@ -446,6 +446,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_findObjects](README.md#_channelData__findObjects)
 - [_getObjectHash](README.md#_channelData__getObjectHash)
 - [_prepareData](README.md#_channelData__prepareData)
+- [_wCmd](README.md#_channelData__wCmd)
 - [_wrapData](README.md#_channelData__wrapData)
 - [createWorker](README.md#_channelData_createWorker)
 - [getData](README.md#_channelData_getData)
@@ -976,7 +977,7 @@ if(_instanceCache[id]) return _instanceCache[id];
 _instanceCache[id] = this;
 ```
 
-### <a name="_channelData__cmd"></a>_channelData::_cmd(cmd, obj, targetObj)
+### <a name="_channelData__cmd"></a>_channelData::_cmd(cmd, UUID1, UUID2)
 
 In the future can be used to initiate events, if required.
 ```javascript
@@ -984,36 +985,9 @@ In the future can be used to initiate events, if required.
 var cmdIndex = cmd[0],
     UUID = cmd[4];
     
-if(!this._workers[cmdIndex]) return;
-if(!this._workers[cmdIndex][UUID]) return;
-    
-var workers = this._workers[cmdIndex][UUID];
-var me = this;
+this._wCmd( cmdIndex, UUID, cmd );
 
-var propFilter = cmd[1];
-var allProps = workers["*"],
-    thisProp = workers[propFilter];
-
-if(allProps) {
-    allProps.forEach( function(w) {
-        var id = w[0],
-            options = w[1];
-        var worker = _workerCmds[id];
-        if(worker) {
-            worker( cmd, options );
-        }
-    });
-}
-if(thisProp) {
-    thisProp.forEach( function(w) {
-        var id = w[0],
-            options = w[1];
-        var worker = _workerCmds[id];
-        if(worker) {
-            worker( cmd, options );
-        }
-    });
-}
+if(UUID2 && UUID2 != UUID) this._wCmd( cmdIndex, UUID2, cmd );
 
 ```
 
@@ -1242,6 +1216,44 @@ if(!this._objectHash[d.__id]) {
     d = this._findObjects( d );
 }
 return d;
+```
+
+### <a name="_channelData__wCmd"></a>_channelData::_wCmd(cmdIndex, UUID, cmd)
+
+
+```javascript
+
+if(!this._workers[cmdIndex]) return;
+if(!this._workers[cmdIndex][UUID]) return;
+    
+var workers = this._workers[cmdIndex][UUID];
+var me = this;
+
+var propFilter = cmd[1];
+var allProps = workers["*"],
+    thisProp = workers[propFilter];
+
+if(allProps) {
+    allProps.forEach( function(w) {
+        var id = w[0],
+            options = w[1];
+        var worker = _workerCmds[id];
+        if(worker) {
+            worker( cmd, options );
+        }
+    });
+}
+if(thisProp) {
+    thisProp.forEach( function(w) {
+        var id = w[0],
+            options = w[1];
+        var worker = _workerCmds[id];
+        if(worker) {
+            worker( cmd, options );
+        }
+    });
+}
+
 ```
 
 ### <a name="_channelData__wrapData"></a>_channelData::_wrapData(data, parent)
@@ -1636,7 +1648,7 @@ _execInfo.fromIndex = i;
 
 obj.data.splice(i, 1);
 obj.data.splice(targetIndex, 0, targetObj);
-this._cmd(a, obj, targetObj);
+this._cmd(a, null, a[1]);
 
 if(!(isRemote)) {
     this.writeCommand(a);
@@ -1672,7 +1684,8 @@ if( toIndex > parentObj.data.length ) {
 parentObj.data.splice( toIndex, 0, insertedObj );
 
 insertedObj.__p = parentObj.__id;
-this._cmd(a, parentObj, insertedObj);
+
+this._cmd(a, null, a[2]);
 
 // remove from orphans
 var ii = this._data.__orphan.indexOf(insertedObj);
@@ -1719,7 +1732,8 @@ parentObj.data.splice( index, 1 );
 // removed at should not be necessary because journal has the data
 // removedItem.__removedAt = index;
 
-this._cmd(a, parentObj, removedItem);
+this._cmd(a, null, a[2]);
+
 removedItem.__p = null; // must be set to null...
 
 // remove from orphans
@@ -1814,7 +1828,8 @@ if(typeof( obj.data[prop]) != "undefined" )  return false;
 
 obj.data[prop] = setObj; // value is now set...
 setObj.__p = obj.__id; // The parent relationship
-this._cmd(a, obj, setObj);
+
+this._cmd(a, null, a[2]);
 
 var ii = this._data.__orphan.indexOf(setObj);
 if(ii>=0) {
@@ -1952,7 +1967,7 @@ if(targetObj) {
     tmpCmd[2] = targetIndex;
     tmpCmd[3] = a[2];
     
-    this._cmd(tmpCmd);
+    this._cmd(tmpCmd, null, tmpCmd[1]);
 
 }
 ```
@@ -1982,7 +1997,7 @@ if( parentObj && insertedObj) {
         // too simple still...
         parentObj.data.splice( shouldBeAt, 1 ); 
         
-        this._cmd(tmpCmd);
+        this._cmd(tmpCmd, null, tmpCmd[2]);
     }
 
 }
@@ -2006,7 +2021,8 @@ if( parentObj && removedItem) {
     parentObj.data.splice( oldPosition, 0, removedItem );
     
     var tmpCmd = [7, oldPosition, a[2], null, a[4]];
-    this._cmd(tmpCmd);
+    
+    this._cmd(tmpCmd, null, a[2]);
     
     // remove from orphans
     var ii = this._data.__orphan.indexOf(removedItem);
@@ -2082,7 +2098,7 @@ if(obj && prop && removedObj) {
     removedObj.__p = obj.__id; // The parent relationship
     
     var tmpCmd = [5, prop, removedObj.__id, 0, a[4] ];
-    this._cmd(tmpCmd);
+    this._cmd(tmpCmd, null, removedObj.__id);
 
 }      
 ```
