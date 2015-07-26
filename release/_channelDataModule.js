@@ -633,8 +633,7 @@
           if (ii >= 0) {
             this._data.__orphan.splice(ii, 1);
           }
-
-          this._moveCmdListToParent(insertedObj);
+          // this._moveCmdListToParent(insertedObj);
 
           // Saving the write to root document
           if (!isRemote) {
