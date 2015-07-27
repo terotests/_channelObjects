@@ -495,10 +495,18 @@
          */
         _myTrait_._cmd_createArray = function (a, isRemote) {
           var objId = a[1];
-          if (!objId) return false;
+          if (!objId) return {
+            error: 21,
+            cmd: a,
+            text: "Object ID was null or undefined"
+          };
 
           var hash = this._getObjectHash();
-          if (hash[objId]) return false;
+          if (hash[objId]) return {
+            error: 22,
+            cmd: a,
+            text: "Object with same ID (" + objId + ") was alredy created"
+          };
 
           var newObj = {
             data: [],
@@ -520,11 +528,22 @@
          * @param float isRemote
          */
         _myTrait_._cmd_createObject = function (a, isRemote) {
+
           var objId = a[1];
-          if (!objId) return false;
+
+          if (!objId) return {
+            error: 11,
+            cmd: a,
+            text: "Object ID was null or undefined"
+          };
 
           var hash = this._getObjectHash();
-          if (hash[objId]) return false;
+
+          if (hash[objId]) return {
+            error: 12,
+            cmd: a,
+            text: "Object with same ID (" + objId + ") was alredy created"
+          };
 
           var newObj = {
             data: {},
@@ -554,7 +573,11 @@
               targetObj,
               i = 0;
 
-          if (!obj) return false;
+          if (!obj) return {
+            error: 2,
+            cmd: 1,
+            text: "Object with ID (" + a[4] + ") did not exist"
+          };
 
           var oldIndex = null;
 
@@ -567,8 +590,20 @@
             }
           }
 
-          if (oldIndex != a[3] || !targetObj) {
-            return false;
+          if (oldIndex != a[3]) {
+            return {
+              error: 121,
+              cmd: a,
+              text: "The old index was not what expected: " + oldIndex + " cmd have " + a[3]
+            };
+          }
+
+          if (!targetObj) {
+            return {
+              error: 122,
+              cmd: a,
+              text: "Object to be moved (" + a[1] + ") was not in the array"
+            };
           }
 
           // Questions here:
@@ -582,9 +617,17 @@
           // Moving the object in the array
 
           var targetIndex = parseInt(a[2]);
-          if (isNaN(targetIndex)) return false;
+          if (isNaN(targetIndex)) return {
+            error: 123,
+            cmd: a,
+            text: "Target index (" + targetIndex + ") was not a number"
+          };
 
-          if (obj.data.length <= i) return false;
+          if (obj.data.length <= i || i < 0) return {
+            error: 124,
+            cmd: a,
+            text: "Invalid original index (" + i + ") given"
+          };
 
           _execInfo.fromIndex = i;
 
@@ -612,15 +655,40 @@
           prop = "*",
               index = parentObj.data.length; // might check if valid...
 
-          if (!parentObj || !insertedObj) return false;
+          if (!parentObj) return {
+            error: 71,
+            cmd: a,
+            text: "Did not find object with ID (" + a[4] + ") "
+          };
+
+          if (!insertedObj) return {
+            error: 72,
+            cmd: a,
+            text: "Did not find object with ID (" + a[2] + ") "
+          };
 
           // NOTE: deny inserting object which already has been inserted
-          if (insertedObj.__p) return false;
-          if (isNaN(toIndex)) return false;
-          if (!this.isArray(parentObj.data)) return;
-          if (toIndex > parentObj.data.length) {
-            return false;
-          }
+          if (insertedObj.__p) return {
+            error: 73,
+            cmd: a,
+            text: "The object already had a parent - need to remove first (" + a[2] + ") "
+          };
+
+          if (isNaN(toIndex)) return {
+            error: 74,
+            cmd: a,
+            text: "toIndex was not a number"
+          };
+          if (!this.isArray(parentObj.data)) return {
+            error: 75,
+            cmd: a,
+            text: "Target Object was not an array"
+          };
+          if (toIndex > parentObj.data.length || toIndex < 0) return {
+            error: 76,
+            cmd: a,
+            text: "toIndex out of range"
+          };
 
           parentObj.data.splice(toIndex, 0, insertedObj);
 
@@ -654,16 +722,36 @@
               oldPosition = parseInt(a[1]),
               prop = "*";
 
-          if (!parentObj || !removedItem) return false;
+          if (!parentObj) return {
+            error: 81,
+            cmd: a,
+            text: "Did not find object with ID (" + a[4] + ") "
+          };
+
+          if (!removedItem) return {
+            error: 82,
+            cmd: a,
+            text: "Did not find object with ID (" + a[2] + ") "
+          };
 
           // NOTE: deny inserting object which already has been inserted
-          if (!removedItem.__p) return false;
+          if (!removedItem.__p) return {
+            error: 83,
+            cmd: a,
+            text: "The removed item did not have a parent (" + a[2] + ") "
+          };
 
           var index = parentObj.data.indexOf(removedItem); // might check if valid...
-          if (isNaN(oldPosition)) return false;
-          if (oldPosition != index) {
-            return false;
-          }
+          if (isNaN(oldPosition)) return {
+            error: 84,
+            cmd: a,
+            text: "oldPosition was not a number"
+          };
+          if (oldPosition != index) return {
+            error: 85,
+            cmd: a,
+            text: "oldPosition was not same as current position"
+          };
 
           // now the object is in the array...
           parentObj.data.splice(index, 1);
@@ -727,16 +815,38 @@
           var obj = this._find(a[4]),
               prop = a[1];
 
-          if (!obj || !prop) return false;
+          if (!obj) return {
+            error: 41,
+            cmd: a,
+            text: "Did not find object with ID (" + a[4] + ") "
+          };
+
+          if (!prop) return {
+            error: 42,
+            cmd: a,
+            text: "The property was not defined (" + a[1] + ") "
+          };
 
           var oldValue = obj.data[prop];
 
-          if (oldValue == a[2]) return false;
+          if (oldValue == a[2]) return {
+            error: 43,
+            cmd: a,
+            text: "Trying to set the same value to the object twice"
+          };
 
           if (typeof oldValue != "undefined") {
-            if (oldValue != a[3]) return false;
+            if (oldValue != a[3]) return {
+              error: 44,
+              cmd: a,
+              text: "The old value was not the same as the current value"
+            };
           } else {
-            if (this.isObject(oldValue) || this.isArray(oldValue)) return false;
+            if (this.isObject(oldValue) || this.isArray(oldValue)) return {
+              error: 45,
+              cmd: a,
+              text: "Trying to set Object or Array value to a scalar property"
+            };
           }
 
           obj.data[prop] = a[2]; // value is now set...
@@ -760,10 +870,32 @@
               prop = a[1],
               setObj = this._find(a[2]);
 
-          if (!obj || !prop) return false;
-          if (!setObj) return false;
+          if (!obj) return {
+            error: 51,
+            cmd: a,
+            text: "Did not find object with ID (" + a[4] + ") "
+          };
 
-          if (typeof obj.data[prop] != "undefined") return false;
+          if (!prop) return {
+            error: 52,
+            cmd: a,
+            text: "The property was not defined (" + a[1] + ") "
+          };
+
+          // if(!obj || !prop)   return false;
+          // if(!setObj)         return false;
+
+          if (!setObj) return {
+            error: 53,
+            cmd: a,
+            text: "Could not find the Object to be set with ID (" + a[2] + ") "
+          };
+
+          if (typeof obj.data[prop] != "undefined") return {
+            error: 53,
+            cmd: a,
+            text: "The property (" + a[1] + ") was already set, try unsetting first "
+          };
 
           obj.data[prop] = setObj; // value is now set...
           setObj.__p = obj.__id; // The parent relationship
@@ -790,9 +922,23 @@
           var obj = this._find(a[4]),
               prop = a[1];
 
-          if (!obj || !prop) return false;
+          if (!obj) return {
+            error: 101,
+            cmd: a,
+            text: "Did not find object with ID (" + a[4] + ") "
+          };
 
-          if (!this.isObject(obj.data[prop])) return false;
+          if (!prop) return {
+            error: 102,
+            cmd: a,
+            text: "The property was not defined (" + a[1] + ") "
+          };
+
+          if (this.isArray(obj.data[prop])) return {
+            error: 103,
+            cmd: a,
+            text: "The Object data was Array (" + a[4] + ") "
+          };
 
           delete obj.data[prop];
           if (!isRemote) this.writeCommand(a);
@@ -1041,13 +1187,22 @@
             var c = _cmds[a[0]];
             if (c) {
               var rv = c.apply(this, [a, isRemote]);
-              if (rv && !isRedo) this.writeLocalJournal(a);
+              if (rv === true && !isRedo) this.writeLocalJournal(a);
               return rv;
             } else {
-              return false;
+              return {
+                error: 199,
+                text: "Invalid command"
+              };
             }
           } catch (e) {
-            return false;
+            var txt = "";
+            if (e && e.message) txt = e.message;
+            return {
+              error: 199,
+              cmd: a,
+              text: "Exception raised " + txt
+            };
           }
         };
 
