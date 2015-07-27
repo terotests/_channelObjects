@@ -1207,6 +1207,14 @@
         };
 
         /**
+         * @param Int i
+         */
+        _myTrait_.getJournalCmd = function (i) {
+
+          return this._journal[i];
+        };
+
+        /**
          * @param float t
          */
         _myTrait_.getJournalLine = function (t) {
