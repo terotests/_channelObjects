@@ -494,6 +494,7 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_reverse_setPropertyObject](README.md#commad_trait__reverse_setPropertyObject)
 - [_reverse_unsetProperty](README.md#commad_trait__reverse_unsetProperty)
 - [execCmd](README.md#commad_trait_execCmd)
+- [getJournalCmd](README.md#commad_trait_getJournalCmd)
 - [getJournalLine](README.md#commad_trait_getJournalLine)
 - [getLocalJournal](README.md#commad_trait_getLocalJournal)
 - [redo](README.md#commad_trait_redo)
@@ -2278,6 +2279,14 @@ try {
             text  : "Exception raised " + txt
     };
 }
+```
+
+### <a name="commad_trait_getJournalCmd"></a>commad_trait::getJournalCmd(i)
+
+
+```javascript
+
+return this._journal[i];
 ```
 
 ### <a name="commad_trait_getJournalLine"></a>commad_trait::getJournalLine(t)
