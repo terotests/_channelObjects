@@ -892,7 +892,7 @@
           };
 
           if (typeof obj.data[prop] != "undefined") return {
-            error: 53,
+            error: 54,
             cmd: a,
             text: "The property (" + a[1] + ") was already set, try unsetting first "
           };
