@@ -2472,17 +2472,6 @@
         };
 
         /**
-         * @param Object dataObj
-         */
-        _myTrait_.diff = function (dataObj) {
-          var diff = diffEngine();
-
-          var res = diff.compareFiles(this.getData(true), dataObj.getData(true));
-
-          return res.cmds;
-        };
-
-        /**
          * @param float t
          */
         _myTrait_.getData = function (t) {
@@ -2553,17 +2542,6 @@
             });
           }
         });
-
-        /**
-         * @param float cmds
-         */
-        _myTrait_.patch = function (cmds) {
-          var me = this;
-          cmds.forEach(function (c, index) {
-            var tc = me._client._transformCmdToNs(c);
-            me._client.addCommand(tc);
-          });
-        };
 
         /**
          * Notice that all channels are using the same commands.

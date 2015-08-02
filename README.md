@@ -489,10 +489,8 @@ dataTest.createWorker("set_input",                        // worker ID
 - [_wCmd](README.md#_channelData__wCmd)
 - [_wrapData](README.md#_channelData__wrapData)
 - [createWorker](README.md#_channelData_createWorker)
-- [diff](README.md#_channelData_diff)
 - [getData](README.md#_channelData_getData)
 - [indexOf](README.md#_channelData_indexOf)
-- [patch](README.md#_channelData_patch)
 - [setWorkerCommands](README.md#_channelData_setWorkerCommands)
 - [toPlainData](README.md#_channelData_toPlainData)
 - [writeCommand](README.md#_channelData_writeCommand)
@@ -2116,17 +2114,6 @@ workers[propFilter].push( [workerID, workerOptions ] );
 */
 ```
 
-### <a name="_channelData_diff"></a>_channelData::diff(dataObj)
-
-
-```javascript
-var diff = diffEngine();
-    
-var res = diff.compareFiles( this.getData(true), dataObj.getData(true));
-
-return res.cmds;
-```
-
 ### <a name="_channelData_getData"></a>_channelData::getData(t)
 
 
@@ -2202,17 +2189,6 @@ if(journalCmds && this.isArray(journalCmds)) {
 
 ```
         
-### <a name="_channelData_patch"></a>_channelData::patch(cmds)
-
-
-```javascript
-var me = this;
-cmds.forEach( function(c, index) {
-    var tc = me._client._transformCmdToNs( c );
-    me._client.addCommand( tc );
-});
-```
-
 ### <a name="_channelData_setWorkerCommands"></a>_channelData::setWorkerCommands(cmdObject)
 
 Notice that all channels are using the same commands.
