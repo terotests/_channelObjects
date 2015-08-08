@@ -2679,7 +2679,7 @@ if(typeof( oldValue ) != "undefined") {
     if( oldValue != a[3] ) return {
         error : 44,
         cmd   : a,
-        text  : "The old value was not the same as the current value"
+        text  : "The old value "+oldValue+" was not the same as the commands old value"
     };
 
 } else {
@@ -3143,6 +3143,10 @@ while( (n--) > 0 ) {
 This function reverses a given command. There may be cases when the command parameters make the command itself non-reversable. It is the responsibility of the framework to make sure all commands remain reversable.
 ```javascript
 console.log("reversing command ", a);
+if(!a) {
+    console.error("reversing undefined command ");
+    return;
+}
 var c = _reverseCmds[a[0]];
 if(c) {
     var rv =  c.apply(this, [a]);

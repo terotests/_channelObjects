@@ -1577,7 +1577,7 @@
             if (oldValue != a[3]) return {
               error: 44,
               cmd: a,
-              text: "The old value was not the same as the current value"
+              text: "The old value " + oldValue + " was not the same as the commands old value"
             };
           } else {
             if (this.isObject(oldValue) || this.isArray(oldValue)) return {
@@ -2027,6 +2027,10 @@
          */
         _myTrait_.reverseCmd = function (a) {
           console.log("reversing command ", a);
+          if (!a) {
+            console.error("reversing undefined command ");
+            return;
+          }
           var c = _reverseCmds[a[0]];
           if (c) {
             var rv = c.apply(this, [a]);
